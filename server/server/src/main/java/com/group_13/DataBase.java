@@ -13,7 +13,7 @@ public class DataBase{
     // Class attributes instantiation
     Connection connectionObject;
     private static DataBase dbInstance;
-
+    private String dbName;
 
     // Method for getting db instance.
     public static synchronized DataBase getDatabase(){
@@ -31,22 +31,28 @@ public class DataBase{
         ||dbPath.isBlank()|| dbPath == null){
             throw new InvalidParameterException();
         }
+        this.dbName = dbName;
         if(databaseExists(dbName, dbPath, dbUser, dbPw)){
             System.out.println("Found previous database.");
             
         }else{
             initDatabase(dbName, dbPath, dbUser, dbPw);
-
+            String dbSpace = "USE "+dbName;
             //create tables with database
-            if (createPatientsTable()){
+            if (createPatientsTable(dbSpace)){
                 System.out.println("Patientstable created.");
             }else{
                 System.out.println("Patientstable creation failed.");
             }
-            if (createHealthRecordTable()){
+            if (createHealthRecordTable(dbSpace)){
                 System.out.println("Records table created.");
             }else{
                 System.out.println("records creation failed.");
+            }
+            if (createUserTable(dbSpace)){
+                System.out.println("Users table created.");
+            }else{
+                System.out.println("Users creation failed.");
             }
         }
     }
@@ -110,7 +116,7 @@ public class DataBase{
         return false;
     }
 
-private boolean createPatientsTable() throws SQLException{
+private boolean createPatientsTable(String dbSpace) throws SQLException{
 
     String createTablePatientsString = "CREATE TABLE patients("+
         "Id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
@@ -125,15 +131,16 @@ private boolean createPatientsTable() throws SQLException{
         ")";
             if(connectionObject!=null){
                 Statement sqlStatement = connectionObject.createStatement();
-                sqlStatement.execute("USE DS26"); // Hardcoded
+                sqlStatement.execute(dbSpace);
                 sqlStatement.executeUpdate(createTablePatientsString);
                 sqlStatement.close();
                 return true;
             }
             return false;
+
 }
 
-private boolean createHealthRecordTable() throws SQLException{
+private boolean createHealthRecordTable(String dbSpace) throws SQLException{
     String createTableHealthRecordsString = "CREATE TABLE HealthRecords("+
     "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
     "patientID INT NOT NULL,"+
@@ -144,12 +151,33 @@ private boolean createHealthRecordTable() throws SQLException{
     ")";
     if(connectionObject!=null){
         Statement sqlStatement = connectionObject.createStatement();
-        sqlStatement.execute("USE DS26"); // Hardcoded
+        sqlStatement.execute(dbSpace); 
         sqlStatement.executeUpdate(createTableHealthRecordsString);
         sqlStatement.close();
         return true;
     }
     return false;
 }
+
+
+private boolean createUserTable(String dbSpace) throws SQLException{
+    String createUserTableString = "CREATE TABLE UserCredentials("+
+    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+    "username VARCHAR(32) NOT NULL,"+
+    "password VARCHAR(32),"+
+    "privileges INT"+
+    ")";
+    if(connectionObject!=null){
+        Statement sqlStatement = connectionObject.createStatement();
+        sqlStatement.execute(dbSpace); 
+        sqlStatement.executeUpdate(createUserTableString);
+        sqlStatement.close();
+        return true;
+    }
+    return false;
+}
+
+
+
 
 }
