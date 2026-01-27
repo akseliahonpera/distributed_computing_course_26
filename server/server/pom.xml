@@ -25,6 +25,14 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/com.password4j/password4j -->
+    
+    <dependency>
+      <groupId>com.password4j</groupId>
+      <artifactId>password4j</artifactId>
+      <version>1.8.4</version>
+      <scope>compile</scope>
+    </dependency>
 
     <dependency>
     <groupId>com.mysql</groupId>
