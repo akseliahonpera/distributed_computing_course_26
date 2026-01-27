@@ -12,7 +12,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
-
 import com.sun.net.httpserver.*;
 
 public class Server
