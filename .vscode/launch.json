@@ -6,9 +6,9 @@
     "configurations": [
         {
             "type": "java",
-            "name": "App",
+            "name": "Server",
             "request": "launch",
-            "mainClass": "com.group_13.App",
+            "mainClass": "com.group_13.Server",
             "projectName": "server"
         },
         {

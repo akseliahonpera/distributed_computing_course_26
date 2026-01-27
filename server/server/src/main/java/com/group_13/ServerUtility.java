@@ -5,15 +5,48 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-
-import com.sun.net.httpserver.*;
-
-import java.util.*;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sun.net.httpserver.HttpExchange;
 
 public class ServerUtility {
+
+    public enum HttpStatus {
+
+        OK(200, "OK"),
+        CREATED(201, "Created"),
+        NO_CONTENT(204, "No Content"),
+
+        BAD_REQUEST(400, "Bad Request"),
+        UNAUTHORIZED(401, "Unauthorized"),
+        FORBIDDEN(403, "Forbidden"),
+        NOT_FOUND(404, "Not Found"),
+
+        INTERNAL_SERVER_ERROR(500, "Internal Server Error");
+
+        private final int code;
+        private final String reason;
+
+        HttpStatus(int code, String reason) {
+            this.code = code;
+            this.reason = reason;
+        }
+
+        public int code() {
+            return code;
+        }
+
+        public String reason() {
+            return reason;
+        }
+    }
+
+
+
     public static Map<String, String> parseQuery(HttpExchange t) {
         URI uri = t.getRequestURI();
         String query = uri.getQuery();
@@ -32,6 +65,19 @@ public class ServerUtility {
         return params;
     }
 
+    static void sendResponse(HttpExchange t, String text, HttpStatus status) throws UnsupportedEncodingException, IOException
+    {
+        byte [] rawData = text.getBytes("UTF-8");
+
+        OutputStream stream = t.getResponseBody();
+
+        t.sendResponseHeaders(status.code, rawData.length);
+        stream.write(rawData);
+
+        stream.flush();
+        stream.close();
+    }
+
     static String GetBodyText(HttpExchange t)  throws IOException
     {
         InputStreamReader stream = new InputStreamReader(t.getRequestBody(), StandardCharsets.UTF_8);
@@ -48,5 +94,17 @@ public class ServerUtility {
         stream.close();
 
         return text;
+    }
+
+    public static String extractBearerToken(HttpExchange exchange) {
+        String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
+
+        if (authHeader == null || authHeader.isBlank()) {
+            return null;
+        }
+        if (!authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        return authHeader.substring(7).strip(); // after "Bearer "
     }
 }
