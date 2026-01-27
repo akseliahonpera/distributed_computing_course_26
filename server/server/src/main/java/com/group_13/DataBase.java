@@ -36,8 +36,22 @@ public class DataBase{
             
         }else{
             initDatabase(dbName, dbPath, dbUser, dbPw);
+
+            //create tables with database
+            if (createPatientsTable()){
+                System.out.println("Patientstable created.");
+            }else{
+                System.out.println("Patientstable creation failed.");
+            }
+            if (createHealthRecordTable()){
+                System.out.println("Records table created.");
+            }else{
+                System.out.println("records creation failed.");
+            }
         }
     }
+
+
 
     //method for checking if database exists, tries to create and assign connectionObject
     private boolean databaseExists(String dbName, String dbPath, String user,String pwd) throws SQLException{
@@ -70,6 +84,7 @@ public class DataBase{
             System.out.println("try connection to root mysql SUCCESS ");
             if(createDatabase(dbName)){
                 System.out.println("DB created");
+                return true;
             }
             System.out.println("Could not create tables");
             return false;
@@ -95,32 +110,46 @@ public class DataBase{
         return false;
     }
 
-private void createPatientsTable(){
+private boolean createPatientsTable() throws SQLException{
 
-String createTablePatientsString = "CREATE TABLE patients("+
-    "Id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-    "socialSecNum INT,"+
-    "fName VARCHAR(150) NOT NULL,"+ // use temporary if needed
-    "lName VARCHAR(150),"+
-    "dateofbirth DATE,"+
-    "address VARCHAR(150),"+
-    "phone VARCHAR(150),"+
-    "emergency_contact VARCHAR(150),"+
-    "homehospital VARCHAR(150)"+
-    ")";
-        
-
+    String createTablePatientsString = "CREATE TABLE patients("+
+        "Id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+        "socialSecNum INT,"+
+        "fName VARCHAR(150) NOT NULL,"+ // use temporary if needed
+        "lName VARCHAR(150),"+
+        "dateofbirth DATE,"+
+        "address VARCHAR(150),"+
+        "phone VARCHAR(150),"+
+        "emergency_contact VARCHAR(150),"+
+        "homehospital VARCHAR(150)"+
+        ")";
+            if(connectionObject!=null){
+                Statement sqlStatement = connectionObject.createStatement();
+                sqlStatement.execute("USE DS26"); // Hardcoded
+                sqlStatement.executeUpdate(createTablePatientsString);
+                sqlStatement.close();
+                return true;
+            }
+            return false;
 }
 
-private void createHealthRecordTable(){
+private boolean createHealthRecordTable() throws SQLException{
     String createTableHealthRecordsString = "CREATE TABLE HealthRecords("+
-    "recID INT PRIMARY KEY NOT_NULL AUTO_INCREMENT,"+
-    "FOREIGN KEY patientID INT NOT NULL,"+
+    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+    "patientID INT NOT NULL,"+
     "datetime TIMESTAMP,"+
     "operation VARCHAR(400),"+
     "responsible VARCHAR(100),"+
-    "followUp VARCHAR(150),"+
+    "followUp VARCHAR(150)"+
     ")";
+    if(connectionObject!=null){
+        Statement sqlStatement = connectionObject.createStatement();
+        sqlStatement.execute("USE DS26"); // Hardcoded
+        sqlStatement.executeUpdate(createTableHealthRecordsString);
+        sqlStatement.close();
+        return true;
+    }
+    return false;
 }
 
 }
