@@ -179,5 +179,24 @@ private boolean createUserTable(String dbSpace) throws SQLException{
 
 
 
+private boolean insert (String dbSpace) throws SQLException{
+    String createUserTableString = "CREATE TABLE UserCredentials("+
+    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+    "username VARCHAR(32) NOT NULL,"+
+    "password VARCHAR(32),"+
+    "privileges INT"+
+    ")";
+    if(connectionObject!=null){
+        Statement sqlStatement = connectionObject.createStatement();
+        sqlStatement.execute(dbSpace); 
+        sqlStatement.executeUpdate(createUserTableString);
+        sqlStatement.close();
+        return true;
+    }
+    return false;
+}
+
+
+
 
 }
