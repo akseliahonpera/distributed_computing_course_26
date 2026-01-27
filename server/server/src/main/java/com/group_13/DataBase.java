@@ -4,7 +4,7 @@ import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import 
+import org.json.JSONObject;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -179,7 +179,7 @@ private boolean createUserTable(String dbSpace) throws SQLException{
 
 
 
-private boolean insert patient(JSON patientJIISONNI) throws SQLException{
+private boolean insertPatient(JSONObject patientJIISONNI,String dbSpace) throws SQLException{
     String createUserTableString = "CREATE TABLE UserCredentials("+
     "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
     "username VARCHAR(32) NOT NULL,"+

@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+<<<<<<< HEAD
+            "name": "App",
+            "request": "launch",
+            "mainClass": "com.group_13.App",
+=======
+            "name": "Server",
+            "request": "launch",
+            "mainClass": "com.group_13.Server",
+>>>>>>> 1859938a0b67f3e1445311f77995b16a2416183f
+            "projectName": "server"
+        },
+        {
+            "type": "jdk",
+            "request": "launch",
+            "name": "Launch Java App"
+        }
+    ]
+}
