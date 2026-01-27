@@ -1,13 +1,24 @@
 
 package com.group_13;
 
-public class UserAuthenticator extends com.sun.net.httpserver.BasicAuthenticator {
 
-    public UserAuthenticator(String realm) {
-        super(realm);
+public class UserAuthenticator {
+    private static UserAuthenticator INSTANCE;
+
+
+    private UserAuthenticator() {        
+        
     }
 
-    public boolean checkCredentials(String username,String password) {
+    public static UserAuthenticator getInstance() {
+        if(INSTANCE == null) {
+            INSTANCE = new UserAuthenticator();
+        }
+        return INSTANCE;
+    }
+
+    public boolean isValidUser(String username, String password)
+    {
         return true;
     }
 }

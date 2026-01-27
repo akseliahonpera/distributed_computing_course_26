@@ -9,11 +9,10 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
-
-import com.sun.net.httpserver.*;
+import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpServer;
 
 public class Server
 {
@@ -40,11 +39,13 @@ public class Server
     {
         try
         {
-            SSLContext sslContext = myServerSSLContext("keystore.jks", "salasana1");
+            System.out.println("Starting server!");
 
-            HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
+            //SSLContext sslContext = myServerSSLContext("keystore.jks", "salasana1");
 
-            server.setHttpsConfigurator (new HttpsConfigurator(sslContext) 
+            //HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
+
+            /*server.setHttpsConfigurator (new HttpsConfigurator(sslContext) 
             {
                 public void configure (HttpsParameters params) {
 
@@ -54,11 +55,13 @@ public class Server
 
                     params.setSSLParameters(sslparams);
                 }
-            });
+            });*/
+
+            HttpServer server = HttpServer.create(new InetSocketAddress(8001),0);
 
             HttpContext serverContext = server.createContext("/api", new RequestHandler());
 
-            serverContext.setAuthenticator(new UserAuthenticator("api"));
+            //serverContext.setAuthenticator(new UserAuthenticator("api"));
 
             server.setExecutor(Executors.newCachedThreadPool()); 
             server.start(); 
