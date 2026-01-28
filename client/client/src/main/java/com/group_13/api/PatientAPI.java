@@ -7,34 +7,28 @@ import java.net.URLEncoder;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.group_13.model.Patient;
 import com.group_13.model.ApiResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * PatientAPI class to handle API requests related to Patients.
+ * Handle API requests related to Patients.
  * Extends BaseAPI to inherit common configurations.
  * Implements methods to perform CRUD operations on Patient resources.
  */
 
 public class PatientAPI extends BaseAPI {
     private static final String PATIENTS_ENDPOINT = BASE_URL + "/patients";
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public PatientAPI() {
         super();
     }
 
-    public ApiResponse getAllPatients() {
-        // implement getting all patients
-        return null;
-    }
-
-    public ApiResponse getPatientById(String id, String token) throws Exception {
+    public ApiResponse getAllPatients() throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(PATIENTS_ENDPOINT + "?PatientID=" + id))
-                .header("Authorization", "Bearer " + token)
+                .uri(URI.create(PATIENTS_ENDPOINT))
+                .header("Authorization", "Bearer " + getToken())
                 .GET()
                 .build();
 
@@ -42,13 +36,25 @@ public class PatientAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse getPatient(Patient patient, String token) throws Exception {
+    public ApiResponse getPatientById(String id) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(PATIENTS_ENDPOINT + "?PatientID="
+                        + URLEncoder.encode(id, "UTF-8")))
+                .header("Authorization", "Bearer " + getToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
+    }
+
+    public ApiResponse getPatient(Patient patient) throws Exception {
 
         String queryString = patientToQueryString(patient);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT + queryString))
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + getToken())
                 .GET()
                 .build();
 
@@ -56,14 +62,14 @@ public class PatientAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse createPatient(Patient patient, String token) throws Exception {
+    public ApiResponse createPatient(Patient patient) throws Exception {
 
         String jsonBody = objectMapper.writeValueAsString(patient);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", "Bearer " + getToken())
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
@@ -71,14 +77,30 @@ public class PatientAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse updatePatient(String id, Patient patient) {
-        // implement updating an existing patient
-        return null;
+    public ApiResponse updatePatient(String id, Patient patient) throws Exception {
+        String jsonBody = objectMapper.writeValueAsString(patient);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(PATIENTS_ENDPOINT))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + getToken())
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse deletePatient(String id) {
-        // implement deleting a patient
-        return null;
+    public ApiResponse deletePatient(String id) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(PATIENTS_ENDPOINT + "?patientID="
+                        + URLEncoder.encode(id, "UTF-8")))
+                .header("Authorization", "Bearer " + getToken())
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
     private String patientToQueryString(Patient patient) throws UnsupportedEncodingException {
@@ -101,7 +123,7 @@ public class PatientAPI extends BaseAPI {
 
         if (patient.getSocialSecNum() != null)
             params.put("socialSecNum", patient.getSocialSecNum());
-        
+
         if (patient.getPhone() != null)
             params.put("phone", patient.getPhone());
 
@@ -125,7 +147,6 @@ public class PatientAPI extends BaseAPI {
                     .append(URLEncoder.encode(entry.getValue(), "UTF-8"));
             first = false;
         }
-
         return query.toString();
     }
 }
