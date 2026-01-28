@@ -31,7 +31,7 @@ public class AuthAPI extends BaseAPI {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
 
-        // TODO: Set the token:
+        // TODO: Set the token here or in AuthService after parsing the response:
         // setToken(extractedToken);
     }
 
