@@ -1,48 +1,55 @@
 package com.group_13.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Model class representing a medical record.
+ */
+
 public class Record {
-    private String id;
-    private String patientId;
-    private String dateTime;
+    private String ID;
+    private String patientID;
+    private String datetime;
     private String operation;
     private String responsible;
-    private String other;
+    private String followUp;
 
     public Record() {
     }
 
-    public Record(String id, String patientId, String dateTime, String operation,
-                  String responsible, String other) {
-        this.id = id;
-        this.patientId = patientId;
-        this.dateTime = dateTime;
+    public Record(String ID, String patientID, String datetime, String operation,
+                  String responsible, String followUp) {
+        this.ID = ID;
+        this.patientID = patientID;
+        this.datetime = datetime;
         this.operation = operation;
         this.responsible = responsible;
-        this.other = other;
+        this.followUp = followUp;
     }
 
-    public String getId() {
-        return id;
+    public String getID() {
+        return ID;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setID(String ID) {
+        this.ID = ID;
     }
 
-    public String getPatientId() {
-        return patientId;
+    public String getPatientID() {
+        return patientID;
     }
 
-    public void setPatientId(String patientId) {
-        this.patientId = patientId;
+    public void setPatientID(String patientID) {
+        this.patientID = patientID;
     }
 
-    public String getDateTime() {
-        return dateTime;
+    public String getdatetime() {
+        return datetime;
     }
 
-    public void setDateTime(String dateTime) {
-        this.dateTime = dateTime;
+    public void setdatetime(String datetime) {
+        this.datetime = datetime;
     }
 
     public String getOperation() {
@@ -61,11 +68,11 @@ public class Record {
         this.responsible = responsible;
     }
 
-    public String getOther() {
-        return other;
+    public String getfollowUp() {
+        return followUp;
     }
 
-    public void setOther(String other) {
-        this.other = other;
+    public void setfollowUp(String followUp) {
+        this.followUp = followUp;
     }
 }
