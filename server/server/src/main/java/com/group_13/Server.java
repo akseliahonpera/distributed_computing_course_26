@@ -11,7 +11,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import com.sun.net.httpserver.*;
+import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpServer;
 
 public class Server
 {
@@ -38,7 +39,20 @@ public class Server
     {
         try
         {
+            System.out.println("Opening database");
+            
+            String dbPath = "jdbc:mysql://localhost:3306/";
+            String dbName = "DS26";
+            String dbuser = "DS26Server";
+            String dbPw = "Gambiinakiuas522";
+
+            DataBase testDb = DataBase.getDatabase();
+            testDb.open(dbName, dbPath, dbuser, dbPw);
+
+
             System.out.println("Starting server!");
+
+            //SSL DISABLED FOR TESTING PURPOSES!!!
 
             //SSLContext sslContext = myServerSSLContext("keystore.jks", "salasana1");
 

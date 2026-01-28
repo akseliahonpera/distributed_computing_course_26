@@ -7,9 +7,11 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -45,7 +47,16 @@ public class ServerUtility {
         }
     }
 
+    public static String encodeParams(Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            return "";
+        }
 
+        return params.entrySet()
+            .stream()
+            .map(e -> URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8) + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+            .collect(Collectors.joining("&"));
+    }
 
     public static Map<String, String> parseQuery(HttpExchange t) {
         URI uri = t.getRequestURI();

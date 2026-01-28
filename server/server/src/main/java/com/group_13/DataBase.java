@@ -4,7 +4,6 @@ import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -23,6 +22,11 @@ public class DataBase{
         }
         System.out.println("returning existing db object");
         return dbInstance;
+    }
+
+    public Connection getConnection()
+    {
+        return connectionObject;
     }
 
     // Method for opening the database
