@@ -26,6 +26,11 @@ public class DataBase{
         return dbInstance;
     }
 
+    public Connection getConnection()
+    {
+        return connectionObject;
+    }
+
     // Method for opening the database
     public void open(String dbName, String dbPath, String dbUser, String dbPw) throws SQLException{
         if(dbName.isBlank() || dbName == null 

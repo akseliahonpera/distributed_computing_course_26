@@ -1,70 +1,78 @@
 package com.group_13.model;
 
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Model class representing a patient.
+ */
+
 public class Patient {
-    private String id;
-    private String FirstName;
-    private String LastName;
-    private String DOB;
-    private String ssn;
+    private String Id;
+    private String fName;
+    private String lName;
+    private String dateofbirth;
+    private String socialSecNum;
     private String address;
     private String phone;
-    private String phone2;
-    private String homeHospital;
+    private String emergencyContact;
+    private String homehospital;
 
     public Patient() {
     }
 
-    public Patient(String id, String firstName, String lastName, String DOB, String ssn,
-                   String address, String phone, String phone2, String homeHospital) {
-        this.id = id;
-        this.FirstName = firstName;
-        this.LastName = lastName;
-        this.DOB = DOB;
-        this.ssn = ssn;
+    public Patient(String Id, String fName, String lName, String dateofbirth, String socialSecNum,
+                   String address, String phone, String emergencyContact, String homehospital) {
+        this.Id = Id;
+        this.fName = fName;
+        this.lName = lName;
+        this.dateofbirth = dateofbirth;
+        this.socialSecNum = socialSecNum;
         this.address = address;
         this.phone = phone;
-        this.phone2 = phone2;
-        this.homeHospital = homeHospital;
+        this.emergencyContact = emergencyContact;
+        this.homehospital = homehospital;
     }
 
     public String getId() {
-        return id;
+        return Id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setId(String Id) {
+        this.Id = Id;
     }
 
-    public String getFirstName() {
-        return FirstName;
+    public String getFName() {
+        return fName;
     }
 
-    public void setFirstName(String firstName) {
-        this.FirstName = firstName;
+    public void setFName(String fName) {
+        this.fName = fName;
     }
 
-    public String getLastName() {
-        return LastName;
+    public String getLName() {
+        return lName;
     }
 
-    public void setLastName(String lastName) {
-        this.LastName = lastName;
+    public void setLName(String lName) {
+        this.lName = lName;
     }
 
-    public String getDOB() {
-        return DOB;
+    public String getDateofbirth() {
+        return dateofbirth;
     }
 
-    public void setDOB(String DOB) {
-        this.DOB = DOB;
+    public void setDateofbirth(String dateofbirth) {
+        this.dateofbirth = dateofbirth;
     }
 
-    public String getSsn() {
-        return ssn;
+    public String getSocialSecNum() {
+        return socialSecNum;
     }
 
-    public void setSsn(String ssn) {
-        this.ssn = ssn;
+    public void setSocialSecNum(String socialSecNum) {
+        this.socialSecNum = socialSecNum;
     }
 
     public String getAddress() {
@@ -83,19 +91,19 @@ public class Patient {
         this.phone = phone;
     }
 
-    public String getPhone2() {
-        return phone2;
+    public String getEmergencyContact() {
+        return emergencyContact;
     }
 
-    public void setPhone2(String phone2) {
-        this.phone2 = phone2;
+    public void setEmergencyContact(String emergencyContact) {
+        this.emergencyContact = emergencyContact;
     }
 
-    public String getHomeHospital() {
-        return homeHospital;
+    public String getHomehospital() {
+        return homehospital;
     }
 
-    public void setHomeHospital(String homeHospital) {
-        this.homeHospital = homeHospital;
+    public void setHomehospital(String homehospital) {
+        this.homehospital = homehospital;
     }
 }

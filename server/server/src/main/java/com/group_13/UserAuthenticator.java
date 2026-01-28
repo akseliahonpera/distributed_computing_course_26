@@ -10,7 +10,7 @@ public class UserAuthenticator {
         
     }
 
-    public static UserAuthenticator getInstance() {
+    public static synchronized UserAuthenticator getInstance() {
         if(INSTANCE == null) {
             INSTANCE = new UserAuthenticator();
         }

@@ -12,7 +12,7 @@ public final class TokenValidator {
         tokens = new HashMap<>();
     }
 
-    public static TokenValidator getInstance() {
+    public static synchronized TokenValidator getInstance() {
         if(INSTANCE == null) {
             INSTANCE = new TokenValidator();
         }
