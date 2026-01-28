@@ -9,7 +9,7 @@
             "name": "App",
             "request": "launch",
             "mainClass": "com.group_13.App",
-            "projectName": "server"
+            "projectName": "client"
         },
         {
             "type": "java",

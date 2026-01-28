@@ -2,31 +2,32 @@ package com.group_13.service;
 
 import com.group_13.api.RecordAPI;
 import com.group_13.model.Record;
+import com.group_13.model.Result;
 
 public class RecordService {
     private RecordAPI recordAPI = new RecordAPI();
 
-    public Record[] getAllRecords() throws Exception {
-        return recordAPI.getAllRecords();
+    public Result<Record[]> getAllRecords() throws Exception {
+        return null;
     }
 
-    public Record getRecordById(String id) throws Exception {
-        return recordAPI.getRecordById(id);
+    public Result<Record> getRecordById(String id) throws Exception {
+        return null;
     }
 
-    public Record[] getRecordsByPatientId(String patientId) throws Exception {
-        return recordAPI.getRecordsByPatientId(patientId);
+    public Result<Record[]> getRecordsByPatientId(String patientId) throws Exception {
+        return null;
     }
 
-    public void createRecord(Record record) throws Exception {
-        recordAPI.createRecord(record);
+    public Result<Void> createRecord(Record record) throws Exception {
+        return null;
     }
 
-    public void updateRecord(String id, Record record) throws Exception {
-        recordAPI.updateRecord(id, record);
+    public Result<Void> updateRecord(String id, Record record) throws Exception {
+        return null;
     }
 
-    public void deleteRecord(String id) throws Exception {
-        recordAPI.deleteRecord(id);
+    public Result<Void> deleteRecord(String id) throws Exception {
+        return null;
     }
 }

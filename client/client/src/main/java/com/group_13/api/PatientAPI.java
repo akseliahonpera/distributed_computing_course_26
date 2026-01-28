@@ -1,7 +1,14 @@
 package com.group_13.api;
 
-import com.group_13.model.Patient;
 import java.net.http.HttpRequest;
+import com.group_13.model.Patient;
+import com.group_13.model.ApiResponse;
+
+/**
+ * PatientAPI class to handle API requests related to Patients.
+ * Extends BaseAPI to inherit common configurations.
+ * Implements methods to perform CRUD operations on Patient resources.
+ */
 
 public class PatientAPI extends BaseAPI {
     private static final String PATIENTS_ENDPOINT = BASE_URL + "/patients";
@@ -10,22 +17,38 @@ public class PatientAPI extends BaseAPI {
         super();
     }
 
-    public Patient[] getAllPatients() {
+    public ApiResponse getAllPatients() {
         // implement getting all patients
+        return null;
     }
 
-    public Patient getPatientById(String id) {
+    public ApiResponse getPatientById(String id) {
         // implement getting a patient by ID
+        return null;
     }
 
-    public void createPatient(Patient patient) {
+    public ApiResponse getPatientByName(String name) {
+        // implement getting a patient by name
+        return null;
+    }
+
+    public ApiResponse getPatientBySSN(String ssn) {
+        // implement getting a patient by soscial security number
+        return null;
+    }
+
+    public ApiResponse createPatient(Patient patient) {
         // implement creating a new patient
+        return null;
     }
 
-    public void updatePatient(String id, Patient patient) {
+    public ApiResponse updatePatient(String id, Patient patient) {
         // implement updating an existing patient
+        return null;
     }
 
-    public void deletePatient(String id) {
+    public ApiResponse deletePatient(String id) {
         // implement deleting a patient
+        return null;
     }
+}
