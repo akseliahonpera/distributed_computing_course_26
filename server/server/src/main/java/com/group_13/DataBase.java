@@ -3,6 +3,7 @@ package com.group_13;
 import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import org.json.JSONObject;
 import java.sql.SQLException;
@@ -178,8 +179,31 @@ private boolean createUserTable(String dbSpace) throws SQLException{
 }
 
 
+private boolean insertPatient(JSONObject patientJSON,String dbSpace) throws SQLException{
+    if(connectionObject!=null){
+        String insertPatientString = 
+        "INSERT INTO patients "+
+        "(socialSecNum, fName, lName, dateofbirth, address, phone, emergency_contact, homehospital)"+
+        "VALUES(?,?,?,?,?,?,?,?)";
 
-private boolean insertPatient(JSONObject patientJIISONNI,String dbSpace) throws SQLException{
+        PreparedStatement sqlstatement = connectionObject.prepareStatement(insertPatientString);
+        sqlstatement.setString(1, patientJSON.getString("socialSecNum"));
+        sqlstatement.setString(2, patientJSON.getString("fName"));
+        sqlstatement.setString(3, patientJSON.getString("lName"));
+        sqlstatement.setString(4, patientJSON.getString("dateofbirth"));
+        sqlstatement.setString(5, patientJSON.getString("address"));
+        sqlstatement.setString(6, patientJSON.getString("phone"));
+        sqlstatement.setString(7, patientJSON.getString("emergency_contact"));
+        sqlstatement.setString(8, patientJSON.getString("homehospital"));
+
+        sqlstatement.executeUpdate();
+        sqlstatement.close();
+        return true;
+    }
+    return false;
+}
+
+private boolean insertHealthRecord(JSONObject patientJIISONNI,String dbSpace) throws SQLException{
     String createUserTableString = "CREATE TABLE UserCredentials("+
     "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
     "username VARCHAR(32) NOT NULL,"+
@@ -196,6 +220,23 @@ private boolean insertPatient(JSONObject patientJIISONNI,String dbSpace) throws 
     return false;
 }
 
+
+private boolean queryGeneric(JSONObject patientJIISONNI,String dbSpace) throws SQLException{
+    String createUserTableString = "CREATE TABLE UserCredentials("+
+    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+    "username VARCHAR(32) NOT NULL,"+
+    "password VARCHAR(32),"+
+    "privileges INT"+
+    ")";
+    if(connectionObject!=null){
+        Statement sqlStatement = connectionObject.createStatement();
+        sqlStatement.execute(dbSpace); 
+        sqlStatement.executeUpdate(createUserTableString);
+        sqlStatement.close();
+        return true;
+    }
+    return false;
+}
 
 
 
