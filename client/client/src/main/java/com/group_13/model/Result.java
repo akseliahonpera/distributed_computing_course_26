@@ -2,7 +2,7 @@ package com.group_13.model;
 
 /**
  * Generic Result class to encapsulate CRUD operation results.
- * May return Record, Patient, or other data types. Also includes a message for the user.
+ * May contain Record, Patient, or other data types. Also includes a message for the user.
  * Intended to be produced by Service classes, and consumed by Controller classes.
  * @param <T> the type of data being returned
  */

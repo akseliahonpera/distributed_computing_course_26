@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * API response wrapper. Returns the status code, raw body and headers of the response.
+ * API response wrapper. Contains the status code, raw body and headers of the response.
  * Intended to be produced by API classes, and consumed by Service classes.
  */
 public class ApiResponse {
