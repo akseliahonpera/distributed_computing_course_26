@@ -18,6 +18,10 @@ public class DataBaseNonStatic{
         this.dbName = dbName;
     }
 
+    private void instantiateConnectionObject(){
+        
+    }
+
     public Connection getConnection()
     {
             return connectionObject;

@@ -213,11 +213,12 @@ private boolean createHealthRecordTable(String dbSpace) throws SQLException{
     System.out.println("Attempting to create healthrecords table");
     String createTableHealthRecordsString = "CREATE TABLE IF NOT EXISTS HealthRecords("+
     "id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-    "patientid BIGINT FOREIGN KEY NOT NULL,"+
+    "patientid BIGINT NOT NULL,"+
     "datetime TIMESTAMP,"+
     "operation VARCHAR(400),"+
     "responsible VARCHAR(100),"+
-    "followup VARCHAR(150)"+
+    "followup VARCHAR(150),"+
+    "CONSTRAINT fk_refer  FOREIGN KEY (patientid) REFERENCES patients(id)"+
     ")";
     if(connectionObject!=null){
         Statement sqlStatement = connectionObject.createStatement();
