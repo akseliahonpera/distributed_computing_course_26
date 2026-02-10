@@ -71,7 +71,6 @@ public class PatientAPI extends BaseAPI {
     public ApiResponse createPatient(Patient patient) throws Exception {
 
         String jsonBody = objectMapper.writeValueAsString(patient);
-        System.out.println(jsonBody);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT))

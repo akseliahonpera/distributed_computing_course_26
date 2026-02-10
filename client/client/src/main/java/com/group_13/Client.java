@@ -66,7 +66,6 @@ public class Client {
 
 
         Patient testPatient = new Patient();
-        testPatient.setId("123");
         testPatient.setFName("Teemu");
         testPatient.setLName("Teekkari");
         testPatient.setDateofbirth("20.06.2005");
