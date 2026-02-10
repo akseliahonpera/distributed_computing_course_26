@@ -71,22 +71,18 @@ public class PatientAPI extends BaseAPI {
 
         String jsonBody = objectMapper.writeValueAsString(patient);
 
-        System.out.println(jsonBody);
-
-        System.out.println(PATIENTS_ENDPOINT);
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getToken())
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
-        System.out.println("Here");
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
     public ApiResponse updatePatient(Patient patient) throws Exception {
+
         String jsonBody = objectMapper.writeValueAsString(patient);
 
         HttpRequest request = HttpRequest.newBuilder()
