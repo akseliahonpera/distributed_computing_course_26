@@ -29,7 +29,7 @@ public class PatientService {
         ApiResponse response = patientAPI.getAllPatients();
         if (response.getStatusCode() == 200) {
             success = true;
-            Patient[] patients = objectMapper.readValue(response.getBody(), Patient[].class);
+            Patient[] patients = objectMapper.readValue(response.getbody(), Patient[].class);
             return new Result<Patient[]>(success, patients, "Succesfully fetched patients");
         }
         return new Result<Patient[]>(success, null,
@@ -41,7 +41,7 @@ public class PatientService {
         ApiResponse response = patientAPI.getPatientById(patient);
         if (response.getStatusCode() == 200) {
             success = true;
-            Patient patient1 = objectMapper.readValue(response.getBody(), Patient.class);
+            Patient patient1 = objectMapper.readValue(response.getbody(), Patient.class);
             return new Result<Patient>(success, patient1, "Succesfully fetched patient");
         }
         return new Result<Patient>(success, null,
