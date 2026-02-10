@@ -19,10 +19,15 @@ import com.group_13.model.ApiResponse;
  */
 
 public class PatientAPI extends BaseAPI {
+    private static final PatientAPI INSTANCE = new PatientAPI();
     private static final String PATIENTS_ENDPOINT = BASE_URL + "/patients";
 
-    public PatientAPI() {
+    private PatientAPI() {
         super();
+    }
+
+    public static PatientAPI getInstance() {
+        return INSTANCE;
     }
 
     public ApiResponse getAllPatients() throws Exception {
@@ -36,10 +41,10 @@ public class PatientAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse getPatientById(String id) throws Exception {
+    public ApiResponse getPatientById(Patient patient) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT + "?PatientID="
-                        + URLEncoder.encode(id, "UTF-8")))
+                        + URLEncoder.encode(patient.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .GET()
                 .build();
@@ -72,29 +77,29 @@ public class PatientAPI extends BaseAPI {
                 .header("Authorization", "Bearer " + getToken())
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
-
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse updatePatient(String id, Patient patient) throws Exception {
+    public ApiResponse updatePatient(Patient patient) throws Exception {
+
         String jsonBody = objectMapper.writeValueAsString(patient);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getToken())
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse deletePatient(String id) throws Exception {
+    public ApiResponse deletePatient(Patient patient) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT + "?patientID="
-                        + URLEncoder.encode(id, "UTF-8")))
+                        + URLEncoder.encode(patient.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .DELETE()
                 .build();

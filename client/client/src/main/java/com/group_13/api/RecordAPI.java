@@ -22,10 +22,15 @@ import com.group_13.model.Patient;
  */
 
 public class RecordAPI extends BaseAPI {
+    private static final RecordAPI INSTANCE = new RecordAPI();
     private static final String RECORDS_ENDPOINT = BASE_URL + "/records";
 
-    public RecordAPI() {
+    private RecordAPI() {
         super();
+    }
+
+    public static RecordAPI getInstance() {
+        return INSTANCE;
     }
 
     public ApiResponse getAllRecords() throws Exception {
@@ -39,10 +44,10 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse getRecordById(String id) throws Exception {
+    public ApiResponse getRecordById(Record record) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?ID="
-                        + URLEncoder.encode(id, "UTF-8")))
+                        + URLEncoder.encode(record.getID(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .GET()
                 .build();
@@ -51,10 +56,10 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse getRecordsByPatientId(String patientId) throws Exception {
+    public ApiResponse getRecordsByPatientId(Patient patient) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?patientID="
-                        + URLEncoder.encode(patientId, "UTF-8")))
+                        + URLEncoder.encode(patient.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .GET()
                 .build();
@@ -78,13 +83,13 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse updateRecord(String id, Record record) throws Exception {
+    public ApiResponse updateRecord(Record record) throws Exception {
 
         String jsonBody = objectMapper.writeValueAsString(record);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?ID="
-                        + URLEncoder.encode(id, "UTF-8")))
+                        + URLEncoder.encode(record.getID(), "UTF-8")))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getToken())
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
@@ -94,10 +99,10 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
-    public ApiResponse deleteRecord(String id) throws Exception {
+    public ApiResponse deleteRecord(Record record) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?ID="
-                        + URLEncoder.encode(id, "UTF-8")))
+                        + URLEncoder.encode(record.getID(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .DELETE()
                 .build();
@@ -109,20 +114,20 @@ public class RecordAPI extends BaseAPI {
     private String recordToQueryString(Record record) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
 
-        if (record.getID() != null)
-            params.put("ID", record.getID());
-        if (record.getPatientID() != null)
-            params.put("patientID", record.getPatientID());
-        if (record.getDatetime() != null)
-            params.put("datetime", record.getDatetime());
-        if (record.getOperation() != null)
-            params.put("operation", record.getOperation());
-        if (record.getResponsible() != null)
-            params.put("responsible", record.getResponsible());
-        if (record.getFollowUp() != null)
-            params.put("followUp", record.getFollowUp());
-        if (params.isEmpty())
-            return "";
+        // if (record.getID() != null)
+        //     params.put("ID", record.getID());
+        // if (record.getPatientID() != null)
+        //     params.put("patientID", record.getPatientID());
+        // if (record.getDatetime() != null)
+        //     params.put("datetime", record.getDatetime());
+        // if (record.getOperation() != null)
+        //     params.put("operation", record.getOperation());
+        // if (record.getResponsible() != null)
+        //     params.put("responsible", record.getResponsible());
+        // if (record.getFollowUp() != null)
+        //     params.put("followUp", record.getFollowUp());
+        // if (params.isEmpty())
+        //     return "";
 
         StringBuilder query = new StringBuilder("?");
         boolean first = true;
