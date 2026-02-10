@@ -24,7 +24,6 @@ public class RequestHandler implements HttpHandler
 
         JSONObject object = new JSONObject(bodyText);
 
-        System.out.println(object);
 
         DataBaseQueryHelper.insert(DataBase.getDatabase(), table, object);
 
