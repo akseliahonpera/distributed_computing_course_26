@@ -126,14 +126,14 @@ public class PatientAPI extends BaseAPI {
         if (patient.getAddress() != null)
             params.put("address", patient.getAddress());
 
-        if (patient.getSocialSecNum() != null)
-            params.put("socialSecNum", patient.getSocialSecNum());
+        if (patient.getSocialsecnum() != null)
+            params.put("socialSecNum", patient.getSocialsecnum());
 
         if (patient.getPhone() != null)
             params.put("phone", patient.getPhone());
 
-        if (patient.getEmergencyContact() != null)
-            params.put("emergency_contact", patient.getEmergencyContact());
+        if (patient.getEmergencycontact() != null)
+            params.put("emergency_contact", patient.getEmergencycontact());
 
         if (patient.getHomehospital() != null)
             params.put("homehospital", patient.getHomehospital());
