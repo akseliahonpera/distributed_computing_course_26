@@ -114,20 +114,20 @@ public class RecordAPI extends BaseAPI {
     private String recordToQueryString(Record record) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
 
-        if (record.getID() != null)
-            params.put("ID", record.getID());
-        if (record.getPatientID() != null)
-            params.put("patientID", record.getPatientID());
-        if (record.getDatetime() != null)
-            params.put("datetime", record.getDatetime());
-        if (record.getOperation() != null)
-            params.put("operation", record.getOperation());
-        if (record.getResponsible() != null)
-            params.put("responsible", record.getResponsible());
-        if (record.getFollowUp() != null)
-            params.put("followUp", record.getFollowUp());
-        if (params.isEmpty())
-            return "";
+        // if (record.getID() != null)
+        //     params.put("ID", record.getID());
+        // if (record.getPatientID() != null)
+        //     params.put("patientID", record.getPatientID());
+        // if (record.getDatetime() != null)
+        //     params.put("datetime", record.getDatetime());
+        // if (record.getOperation() != null)
+        //     params.put("operation", record.getOperation());
+        // if (record.getResponsible() != null)
+        //     params.put("responsible", record.getResponsible());
+        // if (record.getFollowUp() != null)
+        //     params.put("followUp", record.getFollowUp());
+        // if (params.isEmpty())
+        //     return "";
 
         StringBuilder query = new StringBuilder("?");
         boolean first = true;
