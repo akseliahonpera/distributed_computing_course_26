@@ -1,6 +1,7 @@
 package com.group_13.model;
 
-
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class Patient {
     }
 
     public Patient(String Id, String fName, String lName, String dateofbirth, String socialSecNum,
-                   String address, String phone, String emergencyContact, String homehospital) {
+            String address, String phone, String emergencyContact, String homehospital) {
         this.Id = Id;
         this.fName = fName;
         this.lName = lName;

@@ -8,10 +8,15 @@ import java.util.Map;
 import com.group_13.model.ApiResponse;
 
 public class AuthAPI extends BaseAPI {
+    private static final AuthAPI INSTANCE = new AuthAPI();
     private static final String AUTH_ENDPOINT = BASE_URL + "/auth/token";
 
-    public AuthAPI() {
+    private AuthAPI() {
         super();
+    }
+
+    public static AuthAPI getInstance() {
+        return INSTANCE;
     }
 
     public ApiResponse login(String username, String password) throws Exception {
@@ -30,9 +35,6 @@ public class AuthAPI extends BaseAPI {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
-
-        // TODO: Set the token here or in AuthService after parsing the response:
-        // setToken(extractedToken);
     }
 
     public ApiResponse logout(String token) throws Exception {
@@ -43,7 +45,6 @@ public class AuthAPI extends BaseAPI {
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        setToken(null);
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 }

@@ -8,9 +8,9 @@ package com.group_13.model;
  */
 
 public class Result<T> {
-    private boolean success;
-    private T data;
-    private String message;
+    private boolean success; // indicates if the operation was successful
+    private T data; // the data returned by the operation, if any (Patient, Record, Null)
+    private String message; // a message describing the result, for user display/debugging
 
     public Result(boolean success, T data, String message) {
         this.success = success;
