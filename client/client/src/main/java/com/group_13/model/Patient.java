@@ -24,9 +24,21 @@ public class Patient {
     }
 
 
-    public Patient(String Id, String fName, String lName, String dateofbirth, String socialSecNum,
+    public Patient(String fName, String lName, String dateofbirth, String socialSecNum,
             String address, String phone, String emergencyContact, String homehospital) {
-        this.id = Id;
+        this.fname = fName;
+        this.lname = lName;
+        this.dateofbirth = dateofbirth;
+        this.socialsecnum = socialSecNum;
+        this.address = address;
+        this.phone = phone;
+        this.emergencycontact = emergencyContact;
+        this.homehospital = homehospital;
+    }
+
+    public Patient(String id, String fName, String lName, String dateofbirth, String socialSecNum,
+            String address, String phone, String emergencyContact, String homehospital) {
+        this.id = id;
         this.fname = fName;
         this.lname = lName;
         this.dateofbirth = dateofbirth;

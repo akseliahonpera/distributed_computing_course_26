@@ -47,7 +47,7 @@ public class RecordAPI extends BaseAPI {
     public ApiResponse getRecordById(Record record) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?ID="
-                        + URLEncoder.encode(record.getID(), "UTF-8")))
+                        + URLEncoder.encode(record.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .GET()
                 .build();
@@ -89,7 +89,7 @@ public class RecordAPI extends BaseAPI {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?ID="
-                        + URLEncoder.encode(record.getID(), "UTF-8")))
+                        + URLEncoder.encode(record.getId(), "UTF-8")))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getToken())
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
@@ -102,7 +102,7 @@ public class RecordAPI extends BaseAPI {
     public ApiResponse deleteRecord(Record record) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?ID="
-                        + URLEncoder.encode(record.getID(), "UTF-8")))
+                        + URLEncoder.encode(record.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .DELETE()
                 .build();
