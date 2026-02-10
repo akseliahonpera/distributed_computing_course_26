@@ -7,21 +7,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DataBase{
+public class DataBaseNonStatic{
 
     // Class attributes instantiation
     Connection connectionObject;
-    private static DataBase dbInstance;
     private String dbName;
 
-    // Method for getting db instance.
-    public static synchronized DataBase getDatabase(){
-        if(dbInstance == null){
-            System.out.println("Attempting to create new db object.");
-            dbInstance = new DataBase();
-        }
-        System.out.println("returning existing db object");
-        return dbInstance;
+    public DataBaseNonStatic(Connection connObject, String dbName){
+        this.connectionObject = connObject;
+        this.dbName = dbName;
     }
 
     public Connection getConnection()
@@ -188,8 +182,8 @@ public class DataBase{
 private boolean createPatientsTable(String dbSpace) throws SQLException{
     System.out.println("Attempting to create patients table");
     String createTablePatientsString = "CREATE TABLE IF NOT EXISTS patients("+
-        "id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-        "socialsecnum VARCHAR(150),"+
+        "id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+        "socialSecNum VARCHAR(150),"+
         "fname VARCHAR(150) NOT NULL,"+ // use temporary if needed
         "lname VARCHAR(150),"+
         "dateofbirth DATE,"+
@@ -212,8 +206,8 @@ private boolean createPatientsTable(String dbSpace) throws SQLException{
 private boolean createHealthRecordTable(String dbSpace) throws SQLException{
     System.out.println("Attempting to create healthrecords table");
     String createTableHealthRecordsString = "CREATE TABLE IF NOT EXISTS HealthRecords("+
-    "id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-    "patientid BIGINT FOREIGN KEY NOT NULL,"+
+    "id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+    "patientid INT NOT NULL,"+
     "datetime TIMESTAMP,"+
     "operation VARCHAR(400),"+
     "responsible VARCHAR(100),"+
@@ -233,7 +227,7 @@ private boolean createHealthRecordTable(String dbSpace) throws SQLException{
 private boolean createUserTable(String dbSpace) throws SQLException{
     System.out.println("Attempting to create users table");
     String createUserTableString = "CREATE TABLE IF NOT EXISTS UserCredentials("+
-    "id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
+    "id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
     "username VARCHAR(32) NOT NULL,"+
     "password VARCHAR(32),"+
     "privileges INT"+
