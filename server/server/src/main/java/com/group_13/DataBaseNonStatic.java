@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DataBase{
+public class DataBaseNonStatic{
 
     // Class attributes instantiation
     Connection connectionObject;
@@ -23,6 +23,15 @@ public class DataBase{
         System.out.println("returning existing db object");
         return dbInstance;
     }
+
+    public DataBaseNonStatic(Connection connObject, String dbName){
+        this.connectionObject = connObject;
+        this.dbName = dbName;
+        this.
+    }
+
+
+
 
     public Connection getConnection()
     {
@@ -189,7 +198,7 @@ private boolean createPatientsTable(String dbSpace) throws SQLException{
     System.out.println("Attempting to create patients table");
     String createTablePatientsString = "CREATE TABLE IF NOT EXISTS patients("+
         "id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-        "socialsecnum VARCHAR(150),"+
+        "socialSecNum VARCHAR(150),"+
         "fname VARCHAR(150) NOT NULL,"+ // use temporary if needed
         "lname VARCHAR(150),"+
         "dateofbirth DATE,"+
