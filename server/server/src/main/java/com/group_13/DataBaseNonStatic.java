@@ -11,27 +11,12 @@ public class DataBaseNonStatic{
 
     // Class attributes instantiation
     Connection connectionObject;
-    private static DataBase dbInstance;
     private String dbName;
-
-    // Method for getting db instance.
-    public static synchronized DataBase getDatabase(){
-        if(dbInstance == null){
-            System.out.println("Attempting to create new db object.");
-            dbInstance = new DataBase();
-        }
-        System.out.println("returning existing db object");
-        return dbInstance;
-    }
 
     public DataBaseNonStatic(Connection connObject, String dbName){
         this.connectionObject = connObject;
         this.dbName = dbName;
-        this.
     }
-
-
-
 
     public Connection getConnection()
     {
