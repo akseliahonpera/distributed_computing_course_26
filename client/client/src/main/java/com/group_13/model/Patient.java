@@ -10,54 +10,67 @@ import java.util.Map;
  */
 
 public class Patient {
-    private String Id;
-    private String fName;
-    private String lName;
+    private String id;
+    private String fname;
+    private String lname;
     private String dateofbirth;
-    private String socialSecNum;
+    private String socialsecnum;
     private String address;
     private String phone;
-    private String emergencyContact;
+    private String emergencycontact;
     private String homehospital;
 
     public Patient() {
     }
 
-    public Patient(String Id, String fName, String lName, String dateofbirth, String socialSecNum,
+
+    public Patient(String fName, String lName, String dateofbirth, String socialSecNum,
             String address, String phone, String emergencyContact, String homehospital) {
-        this.Id = Id;
-        this.fName = fName;
-        this.lName = lName;
+        this.fname = fName;
+        this.lname = lName;
         this.dateofbirth = dateofbirth;
-        this.socialSecNum = socialSecNum;
+        this.socialsecnum = socialSecNum;
         this.address = address;
         this.phone = phone;
-        this.emergencyContact = emergencyContact;
+        this.emergencycontact = emergencyContact;
+        this.homehospital = homehospital;
+    }
+
+    public Patient(String id, String fName, String lName, String dateofbirth, String socialSecNum,
+            String address, String phone, String emergencyContact, String homehospital) {
+        this.id = id;
+        this.fname = fName;
+        this.lname = lName;
+        this.dateofbirth = dateofbirth;
+        this.socialsecnum = socialSecNum;
+        this.address = address;
+        this.phone = phone;
+        this.emergencycontact = emergencyContact;
         this.homehospital = homehospital;
     }
 
     public String getId() {
-        return Id;
+        return id;
     }
 
     public void setId(String Id) {
-        this.Id = Id;
+        this.id = Id;
     }
 
     public String getFName() {
-        return fName;
+        return fname;
     }
 
     public void setFName(String fName) {
-        this.fName = fName;
+        this.fname = fName;
     }
 
     public String getLName() {
-        return lName;
+        return lname;
     }
 
     public void setLName(String lName) {
-        this.lName = lName;
+        this.lname = lName;
     }
 
     public String getDateofbirth() {
@@ -68,12 +81,12 @@ public class Patient {
         this.dateofbirth = dateofbirth;
     }
 
-    public String getSocialSecNum() {
-        return socialSecNum;
+    public String getSocialsecnum() {
+        return socialsecnum;
     }
 
-    public void setSocialSecNum(String socialSecNum) {
-        this.socialSecNum = socialSecNum;
+    public void setSocialsecnum(String socialSecNum) {
+        this.socialsecnum = socialSecNum;
     }
 
     public String getAddress() {
@@ -92,12 +105,12 @@ public class Patient {
         this.phone = phone;
     }
 
-    public String getEmergencyContact() {
-        return emergencyContact;
+    public String getEmergencycontact() {
+        return emergencycontact;
     }
 
-    public void setEmergencyContact(String emergencyContact) {
-        this.emergencyContact = emergencyContact;
+    public void setEmergencycontact(String emergencyContact) {
+        this.emergencycontact = emergencyContact;
     }
 
     public String getHomehospital() {

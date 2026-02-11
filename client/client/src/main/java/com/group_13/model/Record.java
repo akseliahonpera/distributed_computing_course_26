@@ -10,8 +10,8 @@ import java.util.Map;
  */
 
 public class Record {
-    private String ID;
-    private String patientID;
+    private String id;
+    private String patientid;
     private String datetime;
     private String operation;
     private String responsible;
@@ -21,29 +21,35 @@ public class Record {
     }
 
     public Record(String ID, String patientID, String datetime, String operation,
+<<<<<<< HEAD
             String responsible, String followUp) {
         this.ID = ID;
         this.patientID = patientID;
+=======
+                  String responsible, String followUp) {
+        this.id = ID;
+        this.patientid = patientID;
+>>>>>>> 9a82d6d52e29719e60fc03403eaaf037425d45dd
         this.datetime = datetime;
         this.operation = operation;
         this.responsible = responsible;
         this.followUp = followUp;
     }
 
-    public String getID() {
-        return ID;
+    public String getId() {
+        return id;
     }
 
-    public void setID(String ID) {
-        this.ID = ID;
+    public void setId(String ID) {
+        this.id = ID;
     }
 
-    public String getPatientID() {
-        return patientID;
+    public String getPatientid() {
+        return patientid;
     }
 
-    public void setPatientID(String patientID) {
-        this.patientID = patientID;
+    public void setPatientid(String patientID) {
+        this.patientid = patientID;
     }
 
     public String getDatetime() {
