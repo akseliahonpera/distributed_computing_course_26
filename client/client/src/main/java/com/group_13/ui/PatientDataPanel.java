@@ -23,10 +23,10 @@ public class PatientDataPanel extends javax.swing.JPanel {
         jTextField1.setText(p.getFName());
         jTextField2.setText(p.getLName());
         jTextField3.setText(p.getDateofbirth());
-        jTextField4.setText(p.getSocialSecNum());
+        jTextField4.setText(p.getSocialsecnum());
         jTextField5.setText(p.getAddress());
         jTextField6.setText(p.getPhone());
-        jTextField7.setText(p.getEmergencyContact());
+        jTextField7.setText(p.getEmergencycontact());
         jTextField8.setText(p.getHomehospital());
     }
 
@@ -34,10 +34,10 @@ public class PatientDataPanel extends javax.swing.JPanel {
         p.setFName(jTextField1.getText());
         p.setLName(jTextField2.getText());
         p.setDateofbirth(jTextField3.getText());
-        p.setSocialSecNum(jTextField4.getText());
+        p.setSocialsecnum(jTextField4.getText());
         p.setAddress(jTextField5.getText());
         p.setPhone(jTextField6.getText());
-        p.setEmergencyContact(jTextField7.getText());
+        p.setEmergencycontact(jTextField7.getText());
         p.setHomehospital(jTextField8.getText());
     }
 

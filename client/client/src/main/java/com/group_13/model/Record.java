@@ -21,15 +21,9 @@ public class Record {
     }
 
     public Record(String ID, String patientID, String datetime, String operation,
-<<<<<<< HEAD
-            String responsible, String followUp) {
-        this.ID = ID;
-        this.patientID = patientID;
-=======
                   String responsible, String followUp) {
         this.id = ID;
         this.patientid = patientID;
->>>>>>> 9a82d6d52e29719e60fc03403eaaf037425d45dd
         this.datetime = datetime;
         this.operation = operation;
         this.responsible = responsible;

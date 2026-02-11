@@ -28,7 +28,7 @@ public class RecordDataPanel extends javax.swing.JPanel {
     }
 
     public void updateRecordData(Record r, Patient p) {
-        r.setPatientID(p.getId());
+        r.setPatientid(p.getId());
         r.setDatetime(jTextField1.getText());
         r.setOperation(jTextField2.getText());
         r.setResponsible(jTextField3.getText());

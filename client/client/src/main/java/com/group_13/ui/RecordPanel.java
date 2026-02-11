@@ -68,38 +68,38 @@ public class RecordPanel extends javax.swing.JPanel {
         List<Record> list = new ArrayList<>();
 
         Record r1 = new Record();
-        r1.setID("1");
-        r1.setPatientID("1");
+        r1.setId("1");
+        r1.setPatientid("1");
         r1.setDatetime("12/12/2022");
         r1.setResponsible("Pentti Pasanen");
 
         Record r6 = new Record();
-        r6.setID("6");
-        r6.setPatientID("1");
+        r6.setId("6");
+        r6.setPatientid("1");
         r6.setDatetime("28/8/2021");
         r6.setResponsible("Pentti Pasanen");
 
         Record r2 = new Record();
-        r2.setPatientID("2");
-        r2.setID("2");
+        r2.setPatientid("2");
+        r2.setId("2");
         r2.setDatetime("1/1/2020");
         r2.setResponsible("Alli Asikainen");
 
         Record r3 = new Record();
-        r3.setPatientID("3");
-        r3.setID("3");
+        r3.setPatientid("3");
+        r3.setId("3");
         r3.setDatetime("12/10/2011");
         r3.setResponsible("Olli Ollikainen");
 
         Record r4 = new Record();
-        r4.setPatientID("3");
-        r4.setID("4");
+        r4.setPatientid("3");
+        r4.setId("4");
         r4.setDatetime("1/11/2011");
         r4.setResponsible("Janus Jansson");
 
         Record r5 = new Record();
-        r5.setPatientID("3");
-        r5.setID("5");
+        r5.setPatientid("3");
+        r5.setId("5");
         r5.setDatetime("5/2/2001");
         r5.setResponsible("Kiira Kallio");
 

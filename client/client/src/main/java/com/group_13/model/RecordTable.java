@@ -7,6 +7,7 @@ package com.group_13.model;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import com.group_13.model.Record;
 
 /**
  *
@@ -38,7 +39,7 @@ public class RecordTable extends AbstractTableModel {
         visibleRecords.clear();
 
         for (Record r : allRecords) {
-            if (r.getPatientID().equals(patientId)) {
+            if (r.getPatientid().equals(patientId)) {
                 visibleRecords.add(r);
             }
         }
@@ -74,7 +75,7 @@ public class RecordTable extends AbstractTableModel {
         Record r = visibleRecords.get(row);
 
         return switch (col) {
-            case 0 -> r.getID();
+            case 0 -> r.getId();
             case 1 -> r.getDatetime();
             case 2 -> r.getResponsible();
             default -> "";
