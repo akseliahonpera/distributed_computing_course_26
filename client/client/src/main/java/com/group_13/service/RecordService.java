@@ -26,7 +26,7 @@ public class RecordService {
         ApiResponse response = recordAPI.getAllRecords();
         if (response.getStatusCode() == 200) {
             success = true;
-            Record[] records = objectMapper.readValue(response.getbody(), Record[].class);
+            Record[] records = objectMapper.readValue(response.getBody(), Record[].class);
             return new Result<Record[]>(success, records, "Succesfully fetched records");
         }
         return new Result<Record[]>(success, null, "Failed to fetch records. HTTP status code: " + response.getStatusCode());
@@ -37,7 +37,7 @@ public class RecordService {
         ApiResponse response = recordAPI.getRecordById(record);
         if (response.getStatusCode() == 200) {
             success = true;
-            Record record1 = objectMapper.readValue(response.getbody(), Record.class);
+            Record record1 = objectMapper.readValue(response.getBody(), Record.class);
             return new Result<Record>(success, record, "Succesfully fetched record");
         }
         return new Result<Record>(success, null, "Failed to fetch record. HTTP status code: " + response.getStatusCode());
@@ -48,7 +48,7 @@ public class RecordService {
         ApiResponse response = recordAPI.getRecordsByPatientId(patient);
         if (response.getStatusCode() == 200) {
             success = true;
-            Record[] records = objectMapper.readValue(response.getbody(), Record[].class);
+            Record[] records = objectMapper.readValue(response.getBody(), Record[].class);
             return new Result<Record[]>(success, records, "Succesfully fetched records");
         }
         return new Result<Record[]>(success, null, "Failed to fetch records. HTTP status code: " + response.getStatusCode());

@@ -2,3 +2,9 @@
 patient_documentation_system_for_healthcare
 
 asdf
+
+** CLIENTIN AJO **
+
+cd \client\client
+mvn clean compile
+mvn exec:java

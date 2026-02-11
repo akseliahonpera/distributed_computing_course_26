@@ -31,6 +31,13 @@
       <version>2.21.0</version>
     </dependency>
 
+
+    <dependency>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>AbsoluteLayout</artifactId>
+            <version>RELEASE280</version>
+    </dependency>
+
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
@@ -83,5 +90,20 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+
+
+
+    <plugins>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <configuration>
+                <mainClass>com.group_13.App</mainClass>
+            </configuration>
+        </plugin>
+    </plugins>
+
   </build>
 </project>

@@ -1,6 +1,7 @@
 package com.group_13;
 
 import javax.swing.SwingUtilities;
+import com.group_13.ui.LoginFrame;
 
 public class App 
 {
@@ -11,7 +12,8 @@ public class App
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                MainController.start();
+                LoginFrame frame = new LoginFrame();
+                frame.setVisible(true);
             }
 
         });

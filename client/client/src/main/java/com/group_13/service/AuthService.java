@@ -47,7 +47,7 @@ public class AuthService {
         try {
             ApiResponse response = authAPI.login(username, password);
             if (response.getStatusCode() == 200) {
-                JSONObject obj = new JSONObject(response.getbody());
+                JSONObject obj = new JSONObject(response.getBody());
                 String token = obj.getString("token");
                 String expiration = obj.getString("expiration");
                 setToken(token);

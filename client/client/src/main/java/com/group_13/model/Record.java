@@ -1,5 +1,7 @@
 package com.group_13.model;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +21,7 @@ public class Record {
     }
 
     public Record(String ID, String patientID, String datetime, String operation,
-                  String responsible, String followUp) {
+            String responsible, String followUp) {
         this.ID = ID;
         this.patientID = patientID;
         this.datetime = datetime;
@@ -44,11 +46,11 @@ public class Record {
         this.patientID = patientID;
     }
 
-    public String getdatetime() {
+    public String getDatetime() {
         return datetime;
     }
 
-    public void setdatetime(String datetime) {
+    public void setDatetime(String datetime) {
         this.datetime = datetime;
     }
 
@@ -68,11 +70,11 @@ public class Record {
         this.responsible = responsible;
     }
 
-    public String getfollowUp() {
+    public String getFollowUp() {
         return followUp;
     }
 
-    public void setfollowUp(String followUp) {
+    public void setFollowUp(String followUp) {
         this.followUp = followUp;
     }
 }
