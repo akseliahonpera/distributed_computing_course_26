@@ -41,6 +41,7 @@ public class PatientAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
+
     public ApiResponse getPatientById(Patient patient) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT + "?PatientID="

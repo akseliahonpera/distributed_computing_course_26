@@ -1,5 +1,7 @@
 package com.group_13.model;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,8 +10,8 @@ import java.util.Map;
  */
 
 public class Record {
-    private String ID;
-    private String patientID;
+    private String id;
+    private String patientid;
     private String datetime;
     private String operation;
     private String responsible;
@@ -20,35 +22,35 @@ public class Record {
 
     public Record(String ID, String patientID, String datetime, String operation,
                   String responsible, String followUp) {
-        this.ID = ID;
-        this.patientID = patientID;
+        this.id = ID;
+        this.patientid = patientID;
         this.datetime = datetime;
         this.operation = operation;
         this.responsible = responsible;
         this.followUp = followUp;
     }
 
-    public String getID() {
-        return ID;
+    public String getId() {
+        return id;
     }
 
-    public void setID(String ID) {
-        this.ID = ID;
+    public void setId(String ID) {
+        this.id = ID;
     }
 
-    public String getPatientID() {
-        return patientID;
+    public String getPatientid() {
+        return patientid;
     }
 
-    public void setPatientID(String patientID) {
-        this.patientID = patientID;
+    public void setPatientid(String patientID) {
+        this.patientid = patientID;
     }
 
-    public String getdatetime() {
+    public String getDatetime() {
         return datetime;
     }
 
-    public void setdatetime(String datetime) {
+    public void setDatetime(String datetime) {
         this.datetime = datetime;
     }
 
@@ -68,11 +70,11 @@ public class Record {
         this.responsible = responsible;
     }
 
-    public String getfollowUp() {
+    public String getFollowUp() {
         return followUp;
     }
 
-    public void setfollowUp(String followUp) {
+    public void setFollowUp(String followUp) {
         this.followUp = followUp;
     }
 }

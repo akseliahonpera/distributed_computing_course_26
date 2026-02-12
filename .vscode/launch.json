@@ -26,9 +26,11 @@
             "projectName": "server"
         },
         {
-            "type": "jdk",
+            "type": "java",
+            "name": "Login UI",
             "request": "launch",
-            "name": "Launch Java App"
+            "mainClass": "com.group_13.ui.LoginFrame",
+            "projectName": "client"
         }
     ]
 }

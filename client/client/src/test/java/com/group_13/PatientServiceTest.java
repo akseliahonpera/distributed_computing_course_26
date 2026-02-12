@@ -34,14 +34,12 @@ public class PatientServiceTest {
     @Test
     public void testCreatePatient() throws Exception {
         Result result = patientService.createPatient(testPatient);
-
         System.out.println(result.getMessage());
-        System.out.println(result.getData());
-        System.out.println(result.isSuccess());
         assertTrue(result.isSuccess());
-
-
     }
+
+    // @Test
+    // public void     
     
 
 
