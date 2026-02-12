@@ -89,6 +89,11 @@ class DataBaseQueryHelper
 
     static void insert(DataBase db, String tableName, JSONObject object) throws SQLException
     {
+
+
+     
+        System.out.println(object.toString());
+  
         Set<String> validColumns = getTableColumns(db.getConnection(), tableName);
 
         StringBuilder insertSB = new StringBuilder("INSERT INTO ");
