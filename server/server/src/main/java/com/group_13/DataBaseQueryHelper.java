@@ -133,4 +133,79 @@ class DataBaseQueryHelper
             }
         }
     }
+
+
+    
+    static void update(DataBase db, String tableName, JSONObject object, int id) throws SQLException, Exception
+        /* 
+        Generic update method for tables based on primary key "id". 
+        Takes jsonObject containing update information for database records.
+        Paramaeter id contains the row primary key reference.
+        */
+    {
+        try (Connection conn = db.getConnection()) {
+            Set<String> validColumns = getTableColumns(conn, tableName);
+
+            StringBuilder updateSB = new StringBuilder("UPDATE ");
+            updateSB.append(tableName);
+            ArrayList<Object> values = new ArrayList<>();
+
+            boolean first = true;
+            for (String key : object.keySet()) {
+                if (!validColumns.contains(key)) {
+                    continue;
+                }
+                if (first) {
+                    updateSB.append(" SET ");
+                    first = false;
+                } else {
+                    updateSB.append(", ");
+                }
+                updateSB.append(key);
+                values.add(object.get(key));
+                updateSB.append(" = ? ");
+            }
+            if (values.isEmpty()) {
+                return;
+            }
+
+            updateSB.append(" WHERE id=?");
+            values.add(id);
+            System.out.println(updateSB.toString());
+
+            try (PreparedStatement stmt = conn.prepareStatement(updateSB.toString())) {
+                int index = 1;
+                for (Object v : values) {
+                    stmt.setObject(index++, v);
+                }
+                stmt.execute();
+                stmt.close();
+            }
+        }
+    }
+
+
+      
+    static void delete(DataBase db, String tableName, int id) throws SQLException, Exception
+        /* 
+        Generic delete method for tables based on primary key "id". 
+        Paramaeter id contains the row primary key reference.
+        */
+    {
+        try (Connection conn = db.getConnection()) {
+
+            StringBuilder updateSB = new StringBuilder("DELETE FROM ");
+            updateSB.append(tableName);
+
+            updateSB.append(" WHERE id= ?");
+            System.out.println(updateSB.toString());
+
+            try (PreparedStatement stmt = conn.prepareStatement(updateSB.toString())) {  
+                stmt.setObject(1, id);  
+                stmt.execute();
+                stmt.close();
+            }
+        }
+    }
+
 }

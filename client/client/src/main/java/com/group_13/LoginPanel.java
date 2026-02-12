@@ -13,7 +13,6 @@ public class LoginPanel extends JPanel {
 
     public LoginPanel() {
 
-
         setBackground(Color.BLACK);
         GridBagLayout gridBagLayout = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();

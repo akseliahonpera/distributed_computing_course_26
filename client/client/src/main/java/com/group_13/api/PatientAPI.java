@@ -41,6 +41,7 @@ public class PatientAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
+
     public ApiResponse getPatientById(Patient patient) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PATIENTS_ENDPOINT + "?PatientID="
@@ -77,12 +78,12 @@ public class PatientAPI extends BaseAPI {
                 .header("Authorization", "Bearer " + getToken())
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
-
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
     public ApiResponse updatePatient(Patient patient) throws Exception {
+
         String jsonBody = objectMapper.writeValueAsString(patient);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -126,14 +127,14 @@ public class PatientAPI extends BaseAPI {
         if (patient.getAddress() != null)
             params.put("address", patient.getAddress());
 
-        if (patient.getSocialSecNum() != null)
-            params.put("socialSecNum", patient.getSocialSecNum());
+        if (patient.getSocialsecnum() != null)
+            params.put("socialSecNum", patient.getSocialsecnum());
 
         if (patient.getPhone() != null)
             params.put("phone", patient.getPhone());
 
-        if (patient.getEmergencyContact() != null)
-            params.put("emergency_contact", patient.getEmergencyContact());
+        if (patient.getEmergencycontact() != null)
+            params.put("emergency_contact", patient.getEmergencycontact());
 
         if (patient.getHomehospital() != null)
             params.put("homehospital", patient.getHomehospital());

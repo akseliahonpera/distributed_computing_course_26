@@ -8,13 +8,9 @@ import java.util.Map;
  * Intended to be produced by API classes, and consumed by Service classes.
  */
 public class ApiResponse {
-    private int statusCode;
-    private String body;
-    private Map<String, List<String>> headers;
-
-    public ApiResponse(int statusCode, String body) {
-        this(statusCode, body, null);
-    }
+    private int statusCode; // HTTP status code
+    private String body;  // JSON string, to be parsed by Service classes
+    private Map<String, List<String>> headers; // HTTP headers
 
     public ApiResponse(int statusCode, String body, Map<String, List<String>> headers) {
         this.statusCode = statusCode;
@@ -30,11 +26,11 @@ public class ApiResponse {
         this.statusCode = statusCode;
     }
 
-    public String getbody() {
+    public String getBody() {
         return body;
     }
 
-    public void setbody(String body) {
+    public void setBody(String body) {
         this.body = body;
     }
 
