@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public final class TokenValidator {
     private static TokenValidator INSTANCE;
-    private HashMap<String, Token> tokens;
+    private HashMap<String, Token> tokens = null;
 
     private TokenValidator() {        
         tokens = new HashMap<>();

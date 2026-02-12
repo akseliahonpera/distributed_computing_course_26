@@ -67,66 +67,70 @@ class DataBaseQueryHelper
     }
 
 
-    static JSONArray query(DataBase db, String tableName, Map<String,String> params) throws SQLException
+    static JSONArray query(DataBase db, String tableName, Map<String,String> params) throws SQLException, Exception
     {
-        ResultSet rs = buildQuery(db.getConnection(), tableName, params).executeQuery();
-
-        ResultSetMetaData meta = rs.getMetaData();
-
         JSONArray jsonArray = new JSONArray();
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params)) {
 
-        int columnCount = meta.getColumnCount();
-        while (rs.next()) {
-            JSONObject obj = new JSONObject();
+            ResultSet rs = stmt.executeQuery();
 
-            for (int i = 1; i <= columnCount; i++) {
-                obj.put(meta.getColumnLabel(i), rs.getObject(i));
+            ResultSetMetaData meta = rs.getMetaData();
+            int columnCount = meta.getColumnCount();
+            while (rs.next()) {
+                JSONObject obj = new JSONObject();
+                
+                for (int i = 1; i <= columnCount; i++) {
+                    obj.put(meta.getColumnLabel(i), rs.getObject(i));
+                }
+                jsonArray.put(obj);
             }
-            jsonArray.put(obj);
         }
         return jsonArray;
     }
 
-    static void insert(DataBase db, String tableName, JSONObject object) throws SQLException
+    static void insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
     {
-        Set<String> validColumns = getTableColumns(db.getConnection(), tableName);
+        try (Connection conn = db.getConnection()) {
+            Set<String> validColumns = getTableColumns(conn, tableName);
 
-        StringBuilder insertSB = new StringBuilder("INSERT INTO ");
-        insertSB.append(tableName);
-        
-        ArrayList<Object> values = new ArrayList<>();
+            StringBuilder insertSB = new StringBuilder("INSERT INTO ");
+            insertSB.append(tableName);
+            
+            ArrayList<Object> values = new ArrayList<>();
 
-        boolean first = true;
-        for (String key : object.keySet()) {
-            if (!validColumns.contains(key)) {
-                continue;
+            boolean first = true;
+            for (String key : object.keySet()) {
+                if (!validColumns.contains(key)) {
+                    continue;
+                }
+                if (first) {
+                    insertSB.append("(");
+                    first = false;
+                } else {
+                    insertSB.append(", ");
+                }
+                insertSB.append(key);
+                values.add(object.get(key));
             }
-            if (first) {
-                insertSB.append("(");
-                first = false;
-            } else {
-                insertSB.append(", ");
+
+            if (values.isEmpty()) {
+                return;
             }
-            insertSB.append(key);
-            values.add(object.get(key));
+
+            insertSB.append(") VALUES (");
+            insertSB.append(String.join(", ", Collections.nCopies(values.size(), "?")));
+            insertSB.append(")");
+
+            System.out.println(insertSB.toString());
+
+            try (PreparedStatement stmt = conn.prepareStatement(insertSB.toString())) {
+                int index = 1;
+                for (Object v : values) {
+                    stmt.setObject(index++, v);
+                }
+                
+                stmt.execute();
+            }
         }
-
-        if (values.isEmpty()) {
-            return;
-        }
-
-        insertSB.append(") VALUES (");
-        insertSB.append(String.join(", ", Collections.nCopies(values.size(), "?")));
-        insertSB.append(")");
-
-        System.out.println(insertSB.toString());
-
-        PreparedStatement stmt = db.getConnection().prepareStatement(insertSB.toString());
-        int index = 1;
-        for (Object v : values) {
-            stmt.setObject(index++, v);
-        }
-
-        stmt.execute();
     }
 }

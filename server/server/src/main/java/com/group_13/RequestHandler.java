@@ -3,7 +3,6 @@ package com.group_13;
 
 import java.io.IOException;
 import java.net.URI;
-import java.sql.SQLException;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -18,20 +17,20 @@ public class RequestHandler implements HttpHandler
 
     }
 
-    public void handlePostRequest(HttpExchange t, Map<String, String> query, String table) throws SQLException, IOException
+    public void handlePostRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
         String bodyText = ServerUtility.GetBodyText(t);
 
         JSONObject object = new JSONObject(bodyText);
 
-        DataBaseQueryHelper.insert(DataBase.getDatabase(), table, object);
+        DataBaseQueryHelper.insert(DataBaseManager.getOwnedDataBase(), table, object);
 
         ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
     }
 
-    public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws SQLException, IOException
+    public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
-        JSONArray result = DataBaseQueryHelper.query(DataBase.getDatabase(), table, query);
+        JSONArray result = DataBaseQueryHelper.query(DataBaseManager.getOwnedDataBase(), table, query);
 
         ServerUtility.sendResponse(t, result.toString(), ServerUtility.HttpStatus.OK);
     }
@@ -88,16 +87,14 @@ public class RequestHandler implements HttpHandler
                 return;
             }*/
 
-            String table = "";
+            String table;
             switch (uri.getPath()) {
-                case "/api/patients":
-                    table = "patients";
-                    break;
-                case "/api/records":
-                    table = "records";
-                    break;
-                default:
+                case "/api/patients" -> table = "patients";
+                case "/api/records" -> table = "records";
+                default -> {
                     ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.NOT_FOUND);
+                    return;
+                }
             }
 
             String method = t.getRequestMethod();

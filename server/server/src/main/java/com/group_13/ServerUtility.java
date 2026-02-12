@@ -80,29 +80,25 @@ public class ServerUtility {
     {
         byte [] rawData = text.getBytes("UTF-8");
 
-        OutputStream stream = t.getResponseBody();
-
-        t.sendResponseHeaders(status.code, rawData.length);
-        stream.write(rawData);
-
-        stream.flush();
-        stream.close();
+        try (OutputStream stream = t.getResponseBody()) {
+            t.sendResponseHeaders(status.code, rawData.length);
+            stream.write(rawData);
+            
+            stream.flush();
+        }
     }
 
     static String GetBodyText(HttpExchange t)  throws IOException
     {
-        InputStreamReader stream = new InputStreamReader(t.getRequestBody(), StandardCharsets.UTF_8);
-        BufferedReader reader = new BufferedReader(stream);
-
-        int c;
-        StringBuilder buf = new StringBuilder();
-        while ((c = reader.read()) != -1) {
-            buf.append((char) c);
+        String text;
+        try (InputStreamReader stream = new InputStreamReader(t.getRequestBody(), StandardCharsets.UTF_8)) {
+            BufferedReader reader = new BufferedReader(stream);
+            int c;
+            StringBuilder buf = new StringBuilder();
+            while ((c = reader.read()) != -1) {
+                buf.append((char) c);
+            }   text = buf.toString();
         }
-
-        String text = buf.toString();
-
-        stream.close();
 
         return text;
     }

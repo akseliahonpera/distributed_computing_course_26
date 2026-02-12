@@ -1,248 +1,171 @@
 package com.group_13;
 
-import java.security.InvalidParameterException;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import org.json.JSONObject;
-import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DataBase{
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
-    // Class attributes instantiation
-    Connection connectionObject;
-    private static DataBase dbInstance;
-    private String dbName;
+public class DataBase {
+    private HikariDataSource dataSource = null;
+    private String dbName = null;
 
-    // Method for getting db instance.
-    public static synchronized DataBase getDatabase(){
-        if(dbInstance == null){
-            System.out.println("Attempting to create new db object.");
-            dbInstance = new DataBase();
+    public DataBase(String dbName, String dbPath, String dbUser, String dbPw) {
+        try {
+            this.dbName = dbName;
+
+            dataSource = createDataSource(dbPath, dbName, dbUser, dbPw);
+            if (dataSource == null) {
+                System.out.println("Failed to connect database!!");
+                return;
+            }
+            if (!databaseExists(dbName)) {
+                System.out.println("Database not found! Creating new DB");
+                createDatabase(dbName);
+            } else {
+                System.out.println("Database found!");
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Failed to open database!");
         }
-        System.out.println("returning existing db object");
-        return dbInstance;
     }
 
-    public Connection getConnection()
+    public Connection getConnection() throws Exception
     {
-        return connectionObject;
+        Connection conn = dataSource.getConnection();
+        conn.setCatalog(dbName);
+        return conn;
     }
 
-    // Method for opening the database
-    public void open(String dbName, String dbPath, String dbUser, String dbPw) throws SQLException{
-        if(dbName.isBlank() || dbName == null 
-        ||dbPath.isBlank()|| dbPath == null){
-            throw new InvalidParameterException();
-        }
-        this.dbName = dbName;
-        if(databaseExists(dbName, dbPath, dbUser, dbPw)){
-            System.out.println("Found previous database.");
-            
-        }else{
-            initDatabase(dbName, dbPath, dbUser, dbPw);
-            String dbSpace = "USE "+dbName;
-            //create tables with database
-            if (createPatientsTable(dbSpace)){
-                System.out.println("Patientstable created.");
-            }else{
-                System.out.println("Patientstable creation failed.");
-            }
-            if (createHealthRecordTable(dbSpace)){
-                System.out.println("Records table created.");
-            }else{
-                System.out.println("records creation failed.");
-            }
-            if (createUserTable(dbSpace)){
-                System.out.println("Users table created.");
-            }else{
-                System.out.println("Users creation failed.");
-            }
+    private static HikariDataSource createDataSource(String dbPath, String dbName, String dbUser, String dbPw)
+    {
+        try {
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(dbPath + dbName);
+            config.setUsername(dbUser);
+            config.setPassword(dbPw);
+
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(2);
+            config.setConnectionTimeout(30000); // 30s
+            config.setIdleTimeout(600000);      // 10 min
+            config.setMaxLifetime(1800000);     // 30 min
+
+            return new HikariDataSource(config);
+        } catch (Exception e) {
+            System.out.println(e);
+            return null;
         }
     }
 
-
-
-    //method for checking if database exists, tries to create and assign connectionObject
-    private boolean databaseExists(String dbName, String dbPath, String user,String pwd) throws SQLException{
-        String JDBC_CONNECTION_ADDRESS = dbPath+dbName;
-        System.out.println(JDBC_CONNECTION_ADDRESS);
-        try{
-            this.connectionObject = DriverManager.getConnection(JDBC_CONNECTION_ADDRESS, user, pwd);
-            ResultSet resultSet = connectionObject.getMetaData().getCatalogs();
-            while(resultSet.next()){
-            // String databasename = resultSet.getString(1); // only need to see if db exists
-                resultSet.close();
-                return true;
+    private boolean databaseExists(String dbName) throws Exception {
+        try (Connection conn = getConnection()) {
+            DatabaseMetaData meta = conn.getMetaData();
+            ResultSet rs = meta.getCatalogs();
+            while (rs.next()) {
+                String catalog = rs.getString(1);
+                if (dbName.equalsIgnoreCase(catalog)) {
+                    return true;
+                }
             }
-            resultSet.close();
-        }catch(Exception e){
-        e.printStackTrace();
-            }
-        return false;
-    }
-
-
-    // Method for  overall initializing of the database comprising db creation and table creation
-    private boolean initDatabase(String dbName, String dbPath, String user,String pwd){
-        System.out.println("starting initdatabase method");
-        try{
-            //String JDBC_CONNECTION_ADDRESS = dbPath+dbName;
-            String JDBC_CONNECTION_ADDRESS = dbPath;
-            System.out.println("try connection to root mysql");
-            this.connectionObject = DriverManager.getConnection(JDBC_CONNECTION_ADDRESS, user, pwd);
-            System.out.println("try connection to root mysql SUCCESS ");
-            if(createDatabase(dbName)){
-                System.out.println("DB created");
-                return true;
-            }
-            System.out.println("Could not create tables");
             return false;
+        }
+    }
+    
+    private void createDatabase(String dbName) {
+        System.out.println("Creating database: " + dbName);
+        String createDB_string = "CREATE DATABASE " + dbName;
+        try (Connection conn = getConnection(); Statement sqlstatement = conn.createStatement()) {
+            sqlstatement.execute(createDB_string);
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Database creation failed");
+        }
+    }
 
-        }catch(Exception e){
-            e.printStackTrace();
-            System.out.println("DB creation failed.");
+    private boolean tableColumnsMatches(DataBaseTable table) {
+        try (Connection conn = getConnection()) {
+            DataBaseTable table2 = new DataBaseTable(table.getName());
+            DatabaseMetaData meta = conn.getMetaData();
+
+            try (ResultSet rs = meta.getColumns(dbName, null, table.getName(), null)) {
+                while (rs.next()) {
+                    table2.addColumn(rs.getString("COLUMN_NAME"), rs.getString("TYPE_NAME"));
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            return table.doesMatch(table2);
+        } catch (Exception e) {
             return false;
         }
     }
 
-    // Function for creating the database
-    private boolean createDatabase(String dbName) throws SQLException{
-        String createDB_string = "CREATE DATABASE "+dbName;
-        System.out.println("Trying to create new Database");
-        if(connectionObject!=null){
-            Statement sqlstatement = connectionObject.createStatement();
-            sqlstatement.executeUpdate(createDB_string);
-            sqlstatement.close();
-            System.out.println("Trying to create new Database SUCCESS");
-            return true;
-        }
-        return false;
-    }
+    private void createTable(DataBaseTable table) {
+        System.out.println("Creating table: " + table.getName());
 
-private boolean createPatientsTable(String dbSpace) throws SQLException{
+        try (Connection conn = getConnection(); Statement sqlStatement = conn.createStatement()) {
+            StringBuilder sb = new StringBuilder();
 
-    String createTablePatientsString = "CREATE TABLE patients("+
-        "Id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-        "socialSecNum INT,"+
-        "fName VARCHAR(150) NOT NULL,"+ // use temporary if needed
-        "lName VARCHAR(150),"+
-        "dateofbirth DATE,"+
-        "address VARCHAR(150),"+
-        "phone VARCHAR(150),"+
-        "emergency_contact VARCHAR(150),"+
-        "homehospital VARCHAR(150)"+
-        ")";
-            if(connectionObject!=null){
-                Statement sqlStatement = connectionObject.createStatement();
-                sqlStatement.execute(dbSpace);
-                sqlStatement.executeUpdate(createTablePatientsString);
-                sqlStatement.close();
-                return true;
+            sb.append("CREATE TABLE ");
+            sb.append(table.getName());
+            sb.append(" (");
+
+            boolean first = true;
+            for (String column : table.getVarNames()) {
+                if (!first) {
+                    sb.append(", ");
+                }
+                sb.append(column);
+                sb.append(" ");
+                sb.append(table.getVarType(column));
+                first = false;
             }
+            sb.append(")");
+            sqlStatement.execute(sb.toString());
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Table creation failed!");
+        }
+    }
+
+    private boolean tableExists(String tableName) {
+        try (Connection conn = getConnection()) {
+            DatabaseMetaData meta = conn.getMetaData();
+            try (ResultSet rs = meta.getTables(dbName, null, tableName, null)) {
+                return rs.next();
+            }
+        } catch (Exception e) {
             return false;
-
-}
-
-private boolean createHealthRecordTable(String dbSpace) throws SQLException{
-    String createTableHealthRecordsString = "CREATE TABLE HealthRecords("+
-    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-    "patientID INT NOT NULL,"+
-    "datetime TIMESTAMP,"+
-    "operation VARCHAR(400),"+
-    "responsible VARCHAR(100),"+
-    "followUp VARCHAR(150)"+
-    ")";
-    if(connectionObject!=null){
-        Statement sqlStatement = connectionObject.createStatement();
-        sqlStatement.execute(dbSpace); 
-        sqlStatement.executeUpdate(createTableHealthRecordsString);
-        sqlStatement.close();
-        return true;
+        }
     }
-    return false;
-}
 
-
-private boolean createUserTable(String dbSpace) throws SQLException{
-    String createUserTableString = "CREATE TABLE UserCredentials("+
-    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-    "username VARCHAR(32) NOT NULL,"+
-    "password VARCHAR(32),"+
-    "privileges INT"+
-    ")";
-    if(connectionObject!=null){
-        Statement sqlStatement = connectionObject.createStatement();
-        sqlStatement.execute(dbSpace); 
-        sqlStatement.executeUpdate(createUserTableString);
-        sqlStatement.close();
-        return true;
+    private void dropTable(String tableName) {
+        System.out.println("Dropping table: " + tableName);
+        try (Connection conn = getConnection(); 
+             Statement sqlStatement = conn.createStatement()) {
+            sqlStatement.execute("DROP TABLE `" + dbName + "`.`" + tableName + "`");
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("Drop failed!");
+        }
     }
-    return false;
-}
 
-
-private boolean insertPatient(JSONObject patientJSON,String dbSpace) throws SQLException{
-    if(connectionObject!=null){
-        String insertPatientString = 
-        "INSERT INTO patients "+
-        "(socialSecNum, fName, lName, dateofbirth, address, phone, emergency_contact, homehospital)"+
-        "VALUES(?,?,?,?,?,?,?,?)";
-
-        PreparedStatement sqlstatement = connectionObject.prepareStatement(insertPatientString);
-        sqlstatement.setString(1, patientJSON.getString("socialSecNum"));
-        sqlstatement.setString(2, patientJSON.getString("fName"));
-        sqlstatement.setString(3, patientJSON.getString("lName"));
-        sqlstatement.setString(4, patientJSON.getString("dateofbirth"));
-        sqlstatement.setString(5, patientJSON.getString("address"));
-        sqlstatement.setString(6, patientJSON.getString("phone"));
-        sqlstatement.setString(7, patientJSON.getString("emergency_contact"));
-        sqlstatement.setString(8, patientJSON.getString("homehospital"));
-
-        sqlstatement.executeUpdate();
-        sqlstatement.close();
-        return true;
+    public void defineTable(DataBaseTable table) {
+        if (!tableExists(table.getName())) {
+            createTable(table);
+        }
+        if (!tableColumnsMatches(table)) {
+            System.out.println("WARNING!!!!");
+            System.out.println("Table columns doesn't match definition!");
+            dropTable(table.getName());
+            createTable(table);
+        } else {
+            System.out.println("Table " + table.getName() + " Ok!");
+        }
     }
-    return false;
-}
-
-private boolean insertHealthRecord(JSONObject patientJIISONNI,String dbSpace) throws SQLException{
-    String createUserTableString = "CREATE TABLE UserCredentials("+
-    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-    "username VARCHAR(32) NOT NULL,"+
-    "password VARCHAR(32),"+
-    "privileges INT"+
-    ")";
-    if(connectionObject!=null){
-        Statement sqlStatement = connectionObject.createStatement();
-        sqlStatement.execute(dbSpace); 
-        sqlStatement.executeUpdate(createUserTableString);
-        sqlStatement.close();
-        return true;
-    }
-    return false;
-}
-
-
-private boolean queryGeneric(JSONObject patientJIISONNI,String dbSpace) throws SQLException{
-    String createUserTableString = "CREATE TABLE UserCredentials("+
-    "ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"+
-    "username VARCHAR(32) NOT NULL,"+
-    "password VARCHAR(32),"+
-    "privileges INT"+
-    ")";
-    if(connectionObject!=null){
-        Statement sqlStatement = connectionObject.createStatement();
-        sqlStatement.execute(dbSpace); 
-        sqlStatement.executeUpdate(createUserTableString);
-        sqlStatement.close();
-        return true;
-    }
-    return false;
-}
-
-
-
 }
