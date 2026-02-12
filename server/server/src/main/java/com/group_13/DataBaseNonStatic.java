@@ -17,16 +17,7 @@ public class DataBaseNonStatic{
         this.connectionObject = connObject;
         this.dbName = dbName;
     }
-
-    private void instantiateConnectionObject(){
-        
-    }
-
-    public Connection getConnection()
-    {
-            return connectionObject;
-    }
-
+    
     // Method for opening the database
     public void open(String dbName, String dbPath, String dbUser, String dbPw) throws SQLException{
         if(dbName == null||dbName.isBlank() 
@@ -34,7 +25,7 @@ public class DataBaseNonStatic{
             throw new InvalidParameterException();
         }
         this.dbName = dbName;
-        String dbSpace = "USE "+dbName;
+        String dbSpace = "USE "+this.dbName;
         if(databaseExists(dbName, dbPath, dbUser, dbPw)){
             System.out.println("Found previous database.");
             if(!patientsTableExists(dbSpace)){
