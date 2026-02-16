@@ -24,15 +24,15 @@ public class Patient {
     }
 
 
-    public Patient(String fName, String lName, String dateofbirth, String socialSecNum,
-            String address, String phone, String emergencyContact, String homehospital) {
-        this.fname = fName;
-        this.lname = lName;
+    public Patient(String fname, String lname, String dateofbirth, String socialsecnum,
+            String address, String phone, String emergencycontact, String homehospital) {
+        this.fname = fname;
+        this.lname = lname;
         this.dateofbirth = dateofbirth;
-        this.socialsecnum = socialSecNum;
+        this.socialsecnum = socialsecnum;
         this.address = address;
         this.phone = phone;
-        this.emergencycontact = emergencyContact;
+        this.emergencycontact = emergencycontact;
         this.homehospital = homehospital;
     }
 
@@ -56,6 +56,14 @@ public class Patient {
     public void setId(String Id) {
         this.id = Id;
     }
+
+    @Override
+    public String toString() {
+        return "Patient [id=" + id + ", fname=" + fname + ", lname=" + lname + ", dateofbirth=" + dateofbirth
+                + ", socialsecnum=" + socialsecnum + ", address=" + address + ", phone=" + phone + ", emergencycontact="
+                + emergencycontact + ", homehospital=" + homehospital + "]";
+    }
+
 
     public String getFName() {
         return fname;

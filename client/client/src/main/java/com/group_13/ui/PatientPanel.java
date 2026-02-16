@@ -6,6 +6,8 @@ package com.group_13.ui;
 
 import java.util.*;
 import com.group_13.model.*;
+import com.group_13.service.PatientService;
+
 import javax.swing.JOptionPane;
 
 /**
@@ -24,7 +26,7 @@ public class PatientPanel extends javax.swing.JPanel {
     public PatientPanel() {
         initComponents();
         jTable1.setModel(model);
-        loadTestData();
+        //loadTestData();
 
         jTable1.getSelectionModel().addListSelectionListener(e -> {
 
@@ -57,6 +59,13 @@ public class PatientPanel extends javax.swing.JPanel {
         );
     }
 
+
+
+
+    public PatientPanel getPatientPanelInstance(){
+        return this;
+    }
+
     private void openPatientFrame(Patient patient) {
         javax.swing.SwingUtilities.invokeLater(() -> {
             PatientModifyFrame frame = new PatientModifyFrame(patient);
@@ -74,6 +83,17 @@ public class PatientPanel extends javax.swing.JPanel {
     public void setPatientSelectionListener(PatientSelectionListener l) {
         this.listener = l;
     }
+
+    public void passQueryResults(Patient[] patientlist){
+        List<Patient> list = new ArrayList<>();
+        //Korjatkaa tämä allekirjoittaneen hirvittävä paska fiksummaksi pls. -Akseli
+        for(int i = 0 ; i<patientlist.length; i++){
+            list.add(patientlist[i]);
+        }
+        model.setPatients(list);
+    }
+
+
 
     private void loadTestData() {
 
@@ -189,7 +209,7 @@ public class PatientPanel extends javax.swing.JPanel {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         javax.swing.SwingUtilities.invokeLater(() -> {
-            PatientSearchFrame frame = new PatientSearchFrame();
+            PatientSearchFrame frame = new PatientSearchFrame(getPatientPanelInstance());
             frame.setVisible(true);
         });
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -230,6 +250,12 @@ public class PatientPanel extends javax.swing.JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             //TODO call deletePatient from patientservicew
             model.deletePatient(patient);
+            try {
+                PatientService.getInstance().deletePatient(patient);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             patient = null;
             JOptionPane.showMessageDialog(this,
                     "Patient deleted successfully.",

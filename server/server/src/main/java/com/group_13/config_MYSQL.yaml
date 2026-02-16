@@ -1,0 +1,7 @@
+
+MYSQL_SERVER_CONFIG:
+  Server_1:
+    MYSQL_URL : "jdbc:mysql://localhost:3306/"
+    MYSQL_DB_NAME : "DS26Local2"
+    MYSQL_USER : "DS26Server"
+    MYSQL_PW : "Gambiinakiuas522"

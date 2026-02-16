@@ -6,6 +6,7 @@ package com.group_13.ui;
 
 import javax.swing.JFrame;
 import com.group_13.model.*;
+import com.group_13.service.PatientService;
 
 /**
  *
@@ -31,14 +32,17 @@ public class PatientModifyFrame extends javax.swing.JFrame {
         
         // Modify button
         jButton1.addActionListener(e -> {
-            patientDataPanel1.updatePatientData(patient);
-            // TODO: call updatePatient(patient) from patientservice
-            dispose();
+            try {
+                jButton1ActionPerformed(e);
+            } catch (Exception g) {
+                // TODO Auto-generated catch block
+                g.printStackTrace();
+            }
         });
         
         // Exit button
         jButton2.addActionListener(e -> {
-            dispose();
+            jButton2ActionPerformed(e);
         });
     }
 
@@ -106,7 +110,17 @@ public class PatientModifyFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+    
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {//GEN-FIRST:event_jButton1ActionPerformed
+        //call updatePatient from patientAPI
+        //lypsä formista tiedot ulos
+        patientDataPanel1.updatePatientData(patient);
+        PatientService.getInstance().updatePatient(patient);//rymäytettään servulle 
+    }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        dispose();
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

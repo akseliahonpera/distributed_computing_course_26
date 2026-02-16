@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -93,6 +95,21 @@ class DataBaseQueryHelper
         }
         return jsonArray;
     }
+    /*https://stackoverflow.com/questions/5902310/how-do-i-validate-a-timestamp
+    
+    Check if inoutstring is somewhat correct for timestamp for mysql80*/
+    public static boolean isTimeStampValid(String inputString)
+{ 
+    SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
+    try{
+       format.parse(inputString);
+       return true;
+    }
+    catch(ParseException e)
+    {
+        return false;
+    }
+}
 
     static long insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
     {
@@ -110,6 +127,13 @@ class DataBaseQueryHelper
                     key.equalsIgnoreCase("id") || 
                     object.getString(key).length() == 0) {
                     continue;
+                }
+                /* Check if dateofbirth is in correct timeformat and skip dob if not */
+                if (key.equalsIgnoreCase("dateofbirth")) {
+                    String tempTime = object.getString(key);
+                    if (!isTimeStampValid(tempTime)){
+                        continue;
+                    }
                 }
                 if (first) {
                     insertSB.append("(");

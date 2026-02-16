@@ -42,20 +42,47 @@ public class PatientService {
         if (response.getStatusCode() == 200) {
             success = true;
             Patient patient1 = objectMapper.readValue(response.getBody(), Patient.class);
+            //Minne tämä query tulos pukataan??
             return new Result<Patient>(success, patient1, "Succesfully fetched patient");
         }
         return new Result<Patient>(success, null,
                 "Failed to fetch patient. HTTP status code: " + response.getStatusCode());
     }
 
+    public Result<Patient[]> getPatient(Patient patient) throws Exception {
+        boolean success = false;
+        ApiResponse response = patientAPI.getPatient(patient);
+        if (response.getStatusCode() == 200) {
+            success = true;
+            Patient[] patient1 = objectMapper.readValue(response.getBody(), Patient[].class);
+            test_shit(patient1);
+            //Minne tämä query tulos pukataan??
+            return new Result<Patient[]>(success, patient1, "Succesfully fetched patient");
+        }
+        return new Result<Patient[]>(success, null,
+                "Failed to fetch patient. HTTP status code: " + response.getStatusCode());
+    }
+
+    private void test_shit(Patient[] patient){
+        for(int i=0; i<patient.length;i++){
+            System.out.println("pat_test_: "+ i +"sisältö " + patient[i]);
+            }
+        }
+
+
     public Result<Void> createPatient(Patient patient) throws Exception {
+        System.out.println("Trying to create patienet");
+        System.out.println(patient);
         boolean success = false;
         ApiResponse response = patientAPI.createPatient(patient);
         if (response.getStatusCode() == 200) {
             success = true;
+            System.out.println("Patient create api call Success");
             return new Result<Void>(success, null, "Succesfully created patient");
         }
+        System.out.println("Patient create api call Failed");
         return new Result<Void>(success, null,
+            
                 "Failed to create patient. HTTP status code: " + response.getStatusCode());
     }
 

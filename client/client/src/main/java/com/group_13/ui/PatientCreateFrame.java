@@ -6,6 +6,8 @@ package com.group_13.ui;
 
 import javax.swing.JFrame;
 
+import com.group_13.service.PatientService;
+import com.group_13.model.Patient;
 /**
  *
  * @author JONIK
@@ -42,7 +44,14 @@ public class PatientCreateFrame extends javax.swing.JFrame {
         patientDataPanel1.setMinimumSize(new java.awt.Dimension(500, 500));
 
         jButton1.setText("Create patient");
-        jButton1.addActionListener(this::jButton1ActionPerformed);
+        jButton1.addActionListener(e -> {
+            try {
+                jButton1ActionPerformed(e);
+            } catch (Exception g) {
+                // TODO Auto-generated catch block
+                g.printStackTrace();
+            }
+        });
 
         jButton2.setText("Cancel");
         jButton2.addActionListener(this::jButton2ActionPerformed);
@@ -76,9 +85,12 @@ public class PatientCreateFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO: call createPatient() from PatientService
-        dispose();
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {//GEN-FIRST:event_jButton1ActionPerformed
+        //call createPatient() from PatientService
+        Patient pat = new Patient(null, null,null,null,null,null,null,null);
+        //lypsä formista tiedot ulos
+        patientDataPanel1.updatePatientData(pat);
+        PatientService.getInstance().createPatient(pat);//rymäytettään servulle lastit
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed

@@ -103,7 +103,7 @@ public class Client {
         System.out.print("Password >> ");
         String passWord = scanner.nextLine();
 
-
+        System.out.println("login performed");
         return State.MENU;
     }
 
