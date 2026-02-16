@@ -41,6 +41,7 @@ public class PatientDataPanel extends javax.swing.JPanel {
         p.setHomehospital(jTextField8.getText());
     }
 
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -68,10 +69,10 @@ public class PatientDataPanel extends javax.swing.JPanel {
         jTextField8 = new javax.swing.JTextField();
 
         jLabel1.setText("First Name");
-
+    
         jLabel2.setText("Last Name");
 
-        jLabel3.setText("Date of Birth");
+        jLabel3.setText("Date of Birth (yyyy-MM-dd)");
 
         jLabel4.setText("Social Security Number");
 

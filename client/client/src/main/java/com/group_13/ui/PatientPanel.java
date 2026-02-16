@@ -24,7 +24,7 @@ public class PatientPanel extends javax.swing.JPanel {
     public PatientPanel() {
         initComponents();
         jTable1.setModel(model);
-        loadTestData();
+        //loadTestData();
 
         jTable1.getSelectionModel().addListSelectionListener(e -> {
 
@@ -57,6 +57,50 @@ public class PatientPanel extends javax.swing.JPanel {
         );
     }
 
+
+public PatientPanel(Patient[] patientlist) {
+        initComponents();
+        jTable1.setModel(model);
+        passQueryResults(patientlist);
+
+        jTable1.getSelectionModel().addListSelectionListener(e -> {
+
+            if (!e.getValueIsAdjusting()) {
+
+                int row = jTable1.getSelectedRow();
+
+                if (row >= 0) {
+                    Patient selected = model.getPatient(row);
+
+                    firePatientSelected(selected);
+                }
+            }
+        });
+
+        jTable1.addMouseListener(
+                new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt
+            ) {
+                if (evt.getClickCount() == 2) { // double-click
+                    int row = jTable1.getSelectedRow();
+                    if (row >= 0) {
+                        Patient selected = model.getPatient(row);
+                        openPatientFrame(selected);
+                    }
+                }
+            }
+        }
+        );
+    }
+
+
+
+
+    public PatientPanel getPatientPanelInstance(){
+        return this;
+    }
+
     private void openPatientFrame(Patient patient) {
         javax.swing.SwingUtilities.invokeLater(() -> {
             PatientModifyFrame frame = new PatientModifyFrame(patient);
@@ -74,6 +118,17 @@ public class PatientPanel extends javax.swing.JPanel {
     public void setPatientSelectionListener(PatientSelectionListener l) {
         this.listener = l;
     }
+
+    public void passQueryResults(Patient[] patientlist){
+        List<Patient> list = new ArrayList<>();
+        //Korjatkaa tämä allekirjoittaneen hirvittävä paska fiksummaksi pls. -Akseli
+        for(int i = 0 ; i<patientlist.length; i++){
+            list.add(patientlist[i]);
+        }
+        model.setPatients(list);
+    }
+
+
 
     private void loadTestData() {
 

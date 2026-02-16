@@ -1,5 +1,4 @@
 package com.group_13;
-
 public class DataBaseManager
 {
     private static DataBase ownDB = null;
@@ -8,18 +7,21 @@ public class DataBaseManager
     {
         DataBaseTable patientsTable = new DataBaseTable("patients");
 
-        patientsTable.addColumn("id",                "INT PRIMARY KEY NOT NULL AUTO_INCREMENT");
+        patientsTable.addColumn("id",                "INT PRIMARY KEY AUTO_INCREMENT");
         patientsTable.addColumn("socialsecnum",      "VARCHAR(150)");
         patientsTable.addColumn("fname",             "VARCHAR(32)");
         patientsTable.addColumn("lname",             "VARCHAR(32)");
-        patientsTable.addColumn("dateofbirth",       "DATE");
+        patientsTable.addColumn("dateofbirth",       "date DEFAULT NULL");
         patientsTable.addColumn("address",           "VARCHAR(150)");
         patientsTable.addColumn("phone",             "VARCHAR(150)");
         patientsTable.addColumn("emergency_contact", "VARCHAR(150)");
         patientsTable.addColumn("homehospital",      "VARCHAR(150)");
-
+        
         return patientsTable;
     }
+
+
+
 
     private static DataBaseTable getRecordsTableDefinition()
     {
@@ -27,7 +29,7 @@ public class DataBaseManager
 
         recordTable.addColumn("id",                "INT PRIMARY KEY NOT NULL AUTO_INCREMENT");
         recordTable.addColumn("patientid",         "INT NOT NULL");
-        recordTable.addColumn("datetime",          "TIMESTAMP");
+        recordTable.addColumn("datetime",          "DATETIME DEFAULT CURRENT_TIMESTAMP");
         recordTable.addColumn("operation",         "VARCHAR(400)");
         recordTable.addColumn("responsible",       "VARCHAR(100)");
         recordTable.addColumn("followup",          "VARCHAR(150)");
@@ -61,9 +63,10 @@ public class DataBaseManager
     public static synchronized DataBase getOwnedDataBase() {
         if (ownDB == null) {
             String dbPath = "jdbc:mysql://localhost:3306/";
-            String dbName = "DS26Local2";
-            String dbUser = "DS26Server";
+            String dbName = "ds26";
+            String dbUser = "root";
             String dbPw = "Gambiinakiuas522";
+
 
             ownDB = initDataBase(dbName, dbPath, dbUser, dbPw);
         }

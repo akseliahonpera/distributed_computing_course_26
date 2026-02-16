@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -25,45 +28,6 @@ class DataBaseQueryHelper
             columnSet.add(rs.getString("COLUMN_NAME"));
         }
         return columnSet;
-    }
-
-    static public PreparedStatement buildQuery(Connection conn, String tableName, Map<String,String> params) throws SQLException
-    {
-        Set<String> validColumns = getTableColumns(conn, tableName);
-        StringBuilder querySB = new StringBuilder("SELECT * FROM ");
-
-        querySB.append(tableName);
-
-        if (params.keySet().size() < 0) {
-            return conn.prepareStatement(querySB.toString());
-        }
-        querySB.append(" WHERE ");
-        boolean first = true;
-        for (String key : params.keySet()) {
-            if (!validColumns.contains(key)) {
-                continue;
-            }
-
-            if (!first) {
-                querySB.append(" AND ");
-            }
-            querySB.append(key);
-            querySB.append(" = ?");
-
-            first = false;
-        }
-        PreparedStatement stmt = conn.prepareStatement(querySB.toString());
-
-        System.out.println(querySB.toString());
-
-        int index = 1;
-        for (String key : params.keySet()) {
-            stmt.setString(index++, params.get(key));
-        }
-
-        System.out.println(stmt.toString());
-        
-        return stmt;
     }
 
 
@@ -87,8 +51,74 @@ class DataBaseQueryHelper
         }
         return jsonArray;
     }
+    /*https://stackoverflow.com/questions/5902310/how-do-i-validate-a-timestamp
+    
+    Check if inoutstring is somewhat correct for timestamp for mysql80*/
+    public static boolean isTimeStampValid(String inputString)
+{ 
+    SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
+    try{
+       format.parse(inputString);
+       return true;
+    }
+    catch(ParseException e)
+    {
+        return false;
+    }
+}
 
-    static void insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
+
+
+ static public PreparedStatement buildQuery(Connection conn, String tableName, Map<String,String> params) throws SQLException
+    {
+        Set<String> validColumns = getTableColumns(conn, tableName);
+        StringBuilder querySB = new StringBuilder("SELECT * FROM ");
+
+        querySB.append(tableName);
+        querySB.append(" WHERE ");
+
+        ArrayList<String> values = new ArrayList<>();
+        boolean first = true;
+        for (String key : params.keySet()) {
+            if (!validColumns.contains(key)) {
+                continue;
+            }
+            if (params.get(key).length() == 0) {
+                continue;
+            }
+            if (!first) {
+                querySB.append(" AND ");
+            }
+            querySB.append(key);
+            querySB.append(" = ?");
+            values.add(params.get(key));
+            first = false;
+        }
+
+        if (values.size() < 1) {
+            querySB = new StringBuilder("SELECT * FROM ");
+            querySB.append(tableName);
+            return conn.prepareStatement(querySB.toString());
+        }
+
+        PreparedStatement stmt = conn.prepareStatement(querySB.toString());
+
+        System.out.println(querySB.toString());
+
+        int index = 1;
+        for (String v : values) {
+            stmt.setString(index++, v);
+        }
+
+        System.out.println(stmt.toString());
+        
+        return stmt;
+    }
+
+
+
+
+   static long insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
     {
         try (Connection conn = db.getConnection()) {
             Set<String> validColumns = getTableColumns(conn, tableName);
@@ -103,6 +133,16 @@ class DataBaseQueryHelper
                 if (!validColumns.contains(key)) {
                     continue;
                 }
+                if (key.equalsIgnoreCase("id")) {
+                    continue;
+                }
+                /* Check if dateofbirth is in correct timeformat and skip dob if not */
+                if (key.equalsIgnoreCase("dateofbirth")) {
+                    String tempTime = object.getString(key);
+                    if (!isTimeStampValid(tempTime)){
+                        continue;
+                    }
+                }
                 if (first) {
                     insertSB.append("(");
                     first = false;
@@ -114,7 +154,7 @@ class DataBaseQueryHelper
             }
 
             if (values.isEmpty()) {
-                return;
+                return -1;
             }
 
             insertSB.append(") VALUES (");
@@ -123,15 +163,24 @@ class DataBaseQueryHelper
 
             System.out.println(insertSB.toString());
 
-            try (PreparedStatement stmt = conn.prepareStatement(insertSB.toString())) {
+            try (PreparedStatement stmt = conn.prepareStatement(insertSB.toString(), Statement.RETURN_GENERATED_KEYS)) {
                 int index = 1;
                 for (Object v : values) {
                     stmt.setObject(index++, v);
                 }
                 
-                stmt.execute();
+                int rows = stmt.executeUpdate();
+                if (rows < 1) {
+                    return -1;
+                }
+
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
             }
         }
+        return -1;
     }
 
 

@@ -112,36 +112,49 @@ public class PatientAPI extends BaseAPI {
     private String patientToQueryString(Patient patient) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
 
-        if (patient.getId() != null)
-            params.put("Id", patient.getId());
 
-        if (patient.getFName() != null)
-            params.put("fName", patient.getFName());
+        System.out.println("paskanvittu"+patient.toString());
 
-        if (patient.getLName() != null)
-            params.put("lName", patient.getLName());
-
-        if (patient.getDateofbirth() != null)
+        if (patient.getId() != null && !patient.getId().isBlank()){
+            params.put("id", patient.getId());
+            System.out.println("ei null id ");
+}
+        if (patient.getFName() != null && !patient.getFName().isBlank()){
+            params.put("fname", patient.getFName());
+            System.out.println("ei null dname ");
+}
+        if (patient.getLName() != null&& !patient.getLName().isBlank()){
+            params.put("lname", patient.getLName());
+        System.out.println("ei null lname ");
+}
+        if (patient.getDateofbirth() != null&& !patient.getDateofbirth().isBlank()){
             params.put("dateofbirth", patient.getDateofbirth());
-
-        if (patient.getAddress() != null)
+        System.out.println("ei null dob ");
+}
+        if (patient.getAddress() != null&& !patient.getAddress().isBlank()){
             params.put("address", patient.getAddress());
-
-        if (patient.getSocialsecnum() != null)
-            params.put("socialSecNum", patient.getSocialsecnum());
-
-        if (patient.getPhone() != null)
+        System.out.println("ei null address ");
+}
+        if (patient.getSocialsecnum() != null&& !patient.getSocialsecnum().isBlank()){
+            params.put("socialsecnum", patient.getSocialsecnum());
+        System.out.println("ei null sosecnum ");
+}
+        if (patient.getPhone() != null&& !patient.getPhone().isBlank()){
             params.put("phone", patient.getPhone());
-
-        if (patient.getEmergencycontact() != null)
+        System.out.println("ei null nmbr ");
+}
+        if (patient.getEmergencycontact() != null&& !patient.getEmergencycontact().isBlank()){
             params.put("emergency_contact", patient.getEmergencycontact());
-
-        if (patient.getHomehospital() != null)
+        System.out.println("ei null e_contact ");
+}
+        if (patient.getHomehospital() != null&& !patient.getHomehospital().isBlank()){
             params.put("homehospital", patient.getHomehospital());
-
-        if (params.isEmpty())
+            System.out.println("ei null homostal ");
+        }
+        if (params.isEmpty()){
+            System.out.println("ei empty query ");
             return "";
-
+}
         StringBuilder query = new StringBuilder("?");
         boolean first = true;
 

@@ -6,6 +6,9 @@ package com.group_13.ui;
 
 import javax.swing.JFrame;
 import com.group_13.model.Patient;
+import com.group_13.model.PatientTable;
+import com.group_13.model.Result;
+import com.group_13.service.PatientService;
 
 /**
  *
@@ -79,10 +82,19 @@ public class PatientSearchFrame extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         jButton1.addActionListener(e -> {
+            patient = new Patient();
             patientDataPanel1.updatePatientData(patient);
             // TODO: need to implement search method in patient service/API
             // can call getAllPatients as a placeholder
-            dispose();
+            
+            try {
+                Patient[] patientlist = PatientService.getInstance().getPatient(patient).getData();
+                PatientPanel patpan = new PatientPanel(patientlist);
+                
+            } catch (Exception g) {
+                // TODO Auto-generated catch block
+                g.printStackTrace();
+            }
         });
     }//GEN-LAST:event_jButton1ActionPerformed
 
