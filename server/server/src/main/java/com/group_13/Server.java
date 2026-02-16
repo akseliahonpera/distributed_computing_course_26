@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.concurrent.Executors;
 
@@ -34,9 +36,15 @@ public class Server
         return ssl;
     }
 
+    private static void initHospitalNetwork(String confFilePath) throws Exception {
+        HospitalNetwork.getInstance().loadFromString(Files.readString(Path.of(confFilePath)));
+    }
+
     public static void main( String[] args ) throws IOException, Exception
     {
-        //DataBaseManager.getOwnedDataBase();
+        initHospitalNetwork("node2_conf.txt");
+
+        DataBaseManager.getOwnDataBase();
         
         try
         {
@@ -71,7 +79,7 @@ public class Server
             System.out.println("Certificate not found");
 
             e.printStackTrace();
-        } catch (Exception e) {
+        } catch (IOException e) {
 
             System.out.println(e.getMessage());
 

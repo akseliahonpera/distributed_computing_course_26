@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -88,7 +89,7 @@ class DataBaseQueryHelper
         return jsonArray;
     }
 
-    static void insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
+    static long insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
     {
         try (Connection conn = db.getConnection()) {
             Set<String> validColumns = getTableColumns(conn, tableName);
@@ -103,6 +104,9 @@ class DataBaseQueryHelper
                 if (!validColumns.contains(key)) {
                     continue;
                 }
+                if (key.equalsIgnoreCase("id")) {
+                    continue;
+                }
                 if (first) {
                     insertSB.append("(");
                     first = false;
@@ -114,7 +118,7 @@ class DataBaseQueryHelper
             }
 
             if (values.isEmpty()) {
-                return;
+                return -1;
             }
 
             insertSB.append(") VALUES (");
@@ -123,20 +127,29 @@ class DataBaseQueryHelper
 
             System.out.println(insertSB.toString());
 
-            try (PreparedStatement stmt = conn.prepareStatement(insertSB.toString())) {
+            try (PreparedStatement stmt = conn.prepareStatement(insertSB.toString(), Statement.RETURN_GENERATED_KEYS)) {
                 int index = 1;
                 for (Object v : values) {
                     stmt.setObject(index++, v);
                 }
                 
-                stmt.execute();
+                int rows = stmt.executeUpdate();
+                if (rows < 1) {
+                    return -1;
+                }
+
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
             }
         }
+        return -1;
     }
 
 
     
-    static void update(DataBase db, String tableName, JSONObject object, int id) throws SQLException, Exception
+    static void update(DataBase db, String tableName, JSONObject object, long id) throws SQLException, Exception
         /* 
         Generic update method for tables based on primary key "id". 
         Takes jsonObject containing update information for database records.
@@ -153,6 +166,9 @@ class DataBaseQueryHelper
             boolean first = true;
             for (String key : object.keySet()) {
                 if (!validColumns.contains(key)) {
+                    continue;
+                }
+                if (key.equalsIgnoreCase("id")) {
                     continue;
                 }
                 if (first) {
@@ -186,7 +202,7 @@ class DataBaseQueryHelper
 
 
       
-    static void delete(DataBase db, String tableName, int id) throws SQLException, Exception
+    static void delete(DataBase db, String tableName, long id) throws SQLException, Exception
         /* 
         Generic delete method for tables based on primary key "id". 
         Paramaeter id contains the row primary key reference.
@@ -201,9 +217,25 @@ class DataBaseQueryHelper
             System.out.println(updateSB.toString());
 
             try (PreparedStatement stmt = conn.prepareStatement(updateSB.toString())) {  
-                stmt.setObject(1, id);  
+                stmt.setObject(1, id);
                 stmt.execute();
                 stmt.close();
+            }
+        }
+    }
+
+    static void insertChange(DataBase db, String table, String type, long rowId, long epochTimeMs) throws Exception
+    {
+       try (Connection conn = db.getConnection()) {
+            String query = "INSERT INTO changelog (timestamp, tablename, rowid, type) VALUES (?, ?, ?, ?)";
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setLong(1, epochTimeMs);
+                stmt.setString(2, table);
+                stmt.setLong(3, rowId);
+                stmt.setString(4, type);
+                
+                stmt.execute();
             }
         }
     }
