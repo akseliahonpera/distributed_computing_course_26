@@ -34,32 +34,39 @@ class DataBaseQueryHelper
         StringBuilder querySB = new StringBuilder("SELECT * FROM ");
 
         querySB.append(tableName);
-
-        if (params.keySet().size() < 0) {
-            return conn.prepareStatement(querySB.toString());
-        }
         querySB.append(" WHERE ");
+
+        ArrayList<String> values = new ArrayList<>();
         boolean first = true;
         for (String key : params.keySet()) {
             if (!validColumns.contains(key)) {
                 continue;
             }
-
+            if (params.get(key).length() == 0) {
+                continue;
+            }
             if (!first) {
                 querySB.append(" AND ");
             }
             querySB.append(key);
             querySB.append(" = ?");
-
+            values.add(params.get(key));
             first = false;
         }
+
+        if (values.size() < 1) {
+            querySB = new StringBuilder("SELECT * FROM ");
+            querySB.append(tableName);
+            return conn.prepareStatement(querySB.toString());
+        }
+
         PreparedStatement stmt = conn.prepareStatement(querySB.toString());
 
         System.out.println(querySB.toString());
 
         int index = 1;
-        for (String key : params.keySet()) {
-            stmt.setString(index++, params.get(key));
+        for (String v : values) {
+            stmt.setString(index++, v);
         }
 
         System.out.println(stmt.toString());
