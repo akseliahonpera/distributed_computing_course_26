@@ -60,7 +60,7 @@ public class ServerUtility {
 
     public static Map<String, String> parseQuery(HttpExchange t) {
         URI uri = t.getRequestURI();
-        String query = uri.getQuery();
+        String query = uri.getRawQuery();
 
         Map<String, String> params = new HashMap<>();
         if (query == null || query.isEmpty()) return params;
@@ -71,6 +71,7 @@ public class ServerUtility {
             String value = parts.length > 1
                     ? URLDecoder.decode(parts[1], StandardCharsets.UTF_8)
                     : "";
+
             params.put(key, value);
         }
         return params;

@@ -3,6 +3,8 @@ package com.group_13;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -17,22 +19,86 @@ public class RequestHandler implements HttpHandler
 
     }
 
+    private void forwardRequest(HospitalNode node, HttpExchange t, Map<String, String> query, String table, String method)
+    {
+        //TODO. Implement request forwarding
+        //All writes (DELETE, UPDATE, INSERT) needs to go through owner
+        //Requests could use same API for simplicity
+    }
+
+    private void storeDataBaseChange(String table, String type, long rowId) throws Exception
+    {
+        DataBase localDB = DataBaseManager.getOwnDataBase();
+        long epochTimeMs = Instant.now().toEpochMilli();
+
+        DataBaseQueryHelper.insertChange(localDB, table, type, rowId, epochTimeMs);
+    }
+
+
     public void handlePostRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
         String bodyText = ServerUtility.GetBodyText(t);
 
         JSONObject object = new JSONObject(bodyText);
 
-        DataBaseQueryHelper.insert(DataBaseManager.getOwnedDataBase(), table, object);
+        if (object.has("patientid")) {
+            long id = object.getLong("patientid");
+            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "POST");
+            return;
+        }
+
+        long newRowId = DataBaseQueryHelper.insert(DataBaseManager.getOwnDataBase(), table, object);
+
+        storeDataBaseChange(table, "INSERT", newRowId);
 
         ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
     }
 
     public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
-        JSONArray result = DataBaseQueryHelper.query(DataBaseManager.getOwnedDataBase(), table, query);
+        JSONArray allResults = new JSONArray();
+        ArrayList<HospitalNode> nodes = HospitalNetwork.getInstance().getAllNodes();
+        for (HospitalNode n : nodes) {
+            JSONArray results = DataBaseQueryHelper.query(DataBaseManager.getDataBase(n), table, query);
+            for (int i = 0; i < results.length(); i++) {
+                allResults.put(results.get(i));
+            }
+        }
+        ServerUtility.sendResponse(t, allResults.toString(), ServerUtility.HttpStatus.OK);
+    }
 
-        ServerUtility.sendResponse(t, result.toString(), ServerUtility.HttpStatus.OK);
+    public void handleDeleteRequest(HttpExchange t, Map<String, String> query, String table) throws  Exception
+    {
+        long id = Long.parseLong(query.get("id"));
+
+        if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
+            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "DELETE");
+            return;
+        }
+
+        DataBaseQueryHelper.delete(DataBaseManager.getOwnDataBase(), table, id);
+
+        storeDataBaseChange(table, "DELETE", id);
+
+        ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
+    }
+
+    public void handleUpdateRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
+    {
+        JSONObject object = new JSONObject(ServerUtility.GetBodyText(t));
+
+        long id = Long.parseLong(query.get("id"));
+
+        if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
+            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "UPDATE");
+            return;
+        }
+
+        DataBaseQueryHelper.update(DataBaseManager.getOwnDataBase(), table, object, id);
+
+        storeDataBaseChange(table, "UPDATE", id);
+
+        ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
     }
 
 
@@ -102,6 +168,10 @@ public class RequestHandler implements HttpHandler
                 handlePostRequest(t, query, table);
             } else if (method.equalsIgnoreCase("GET")) {
                 handleGetRequest(t, query, table);
+            } else if (method.equalsIgnoreCase("DELETE")) {
+                handleDeleteRequest(t, query, table);
+            } else if (method.equalsIgnoreCase("UPDATE")) {
+                handleUpdateRequest(t, query, table);
             } else {
                 ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.FORBIDDEN);
             }

@@ -30,46 +30,7 @@ class DataBaseQueryHelper
         return columnSet;
     }
 
-
-    static JSONArray query(DataBase db, String tableName, Map<String,String> params) throws SQLException, Exception
-    {
-        JSONArray jsonArray = new JSONArray();
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params)) {
-
-            ResultSet rs = stmt.executeQuery();
-
-            ResultSetMetaData meta = rs.getMetaData();
-            int columnCount = meta.getColumnCount();
-            while (rs.next()) {
-                JSONObject obj = new JSONObject();
-                
-                for (int i = 1; i <= columnCount; i++) {
-                    obj.put(meta.getColumnLabel(i), rs.getObject(i));
-                }
-                jsonArray.put(obj);
-            }
-        }
-        return jsonArray;
-    }
-    /*https://stackoverflow.com/questions/5902310/how-do-i-validate-a-timestamp
-    
-    Check if inoutstring is somewhat correct for timestamp for mysql80*/
-    public static boolean isTimeStampValid(String inputString)
-{ 
-    SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
-    try{
-       format.parse(inputString);
-       return true;
-    }
-    catch(ParseException e)
-    {
-        return false;
-    }
-}
-
-
-
- static public PreparedStatement buildQuery(Connection conn, String tableName, Map<String,String> params) throws SQLException
+    static public PreparedStatement buildQuery(Connection conn, String tableName, Map<String,String> params) throws SQLException
     {
         Set<String> validColumns = getTableColumns(conn, tableName);
         StringBuilder querySB = new StringBuilder("SELECT * FROM ");
@@ -116,9 +77,43 @@ class DataBaseQueryHelper
     }
 
 
+    static JSONArray query(DataBase db, String tableName, Map<String,String> params) throws SQLException, Exception
+    {
+        JSONArray jsonArray = new JSONArray();
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params)) {
 
+            ResultSet rs = stmt.executeQuery();
 
-   static long insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
+            ResultSetMetaData meta = rs.getMetaData();
+            int columnCount = meta.getColumnCount();
+            while (rs.next()) {
+                JSONObject obj = new JSONObject();
+                
+                for (int i = 1; i <= columnCount; i++) {
+                    obj.put(meta.getColumnLabel(i), rs.getObject(i));
+                }
+                jsonArray.put(obj);
+            }
+        }
+        return jsonArray;
+    }
+    /*https://stackoverflow.com/questions/5902310/how-do-i-validate-a-timestamp
+    
+    Check if inoutstring is somewhat correct for timestamp for mysql80*/
+    public static boolean isTimeStampValid(String inputString)
+{ 
+    SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
+    try{
+       format.parse(inputString);
+       return true;
+    }
+    catch(ParseException e)
+    {
+        return false;
+    }
+}
+
+    static long insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
     {
         try (Connection conn = db.getConnection()) {
             Set<String> validColumns = getTableColumns(conn, tableName);
@@ -185,7 +180,7 @@ class DataBaseQueryHelper
 
 
     
-    static void update(DataBase db, String tableName, JSONObject object, int id) throws SQLException, Exception
+    static void update(DataBase db, String tableName, JSONObject object, long id) throws SQLException, Exception
         /* 
         Generic update method for tables based on primary key "id". 
         Takes jsonObject containing update information for database records.
@@ -202,6 +197,9 @@ class DataBaseQueryHelper
             boolean first = true;
             for (String key : object.keySet()) {
                 if (!validColumns.contains(key)) {
+                    continue;
+                }
+                if (key.equalsIgnoreCase("id")) {
                     continue;
                 }
                 if (first) {
@@ -235,7 +233,7 @@ class DataBaseQueryHelper
 
 
       
-    static void delete(DataBase db, String tableName, int id) throws SQLException, Exception
+    static void delete(DataBase db, String tableName, long id) throws SQLException, Exception
         /* 
         Generic delete method for tables based on primary key "id". 
         Paramaeter id contains the row primary key reference.
@@ -250,9 +248,25 @@ class DataBaseQueryHelper
             System.out.println(updateSB.toString());
 
             try (PreparedStatement stmt = conn.prepareStatement(updateSB.toString())) {  
-                stmt.setObject(1, id);  
+                stmt.setObject(1, id);
                 stmt.execute();
                 stmt.close();
+            }
+        }
+    }
+
+    static void insertChange(DataBase db, String table, String type, long rowId, long epochTimeMs) throws Exception
+    {
+       try (Connection conn = db.getConnection()) {
+            String query = "INSERT INTO changelog (timestamp, tablename, rowid, type) VALUES (?, ?, ?, ?)";
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setLong(1, epochTimeMs);
+                stmt.setString(2, table);
+                stmt.setLong(3, rowId);
+                stmt.setString(4, type);
+                
+                stmt.execute();
             }
         }
     }

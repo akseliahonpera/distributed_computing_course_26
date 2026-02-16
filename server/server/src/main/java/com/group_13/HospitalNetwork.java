@@ -4,17 +4,39 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-class HospitalNetwork
+public class HospitalNetwork
 {
+    private static HospitalNetwork INSTANCE = null;
+
     private TreeMap<Integer, HospitalNode> nodes = null;
-    public HospitalNetwork()
+    private int localNodeId = -1;
+    private HospitalNetwork()
     {
         nodes = new TreeMap<>();
     }
 
+    public static synchronized HospitalNetwork getInstance()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new HospitalNetwork();
+        }
+        return INSTANCE;
+    }
+ 
     public HospitalNode getNode(int id)
     {
         return nodes.get(id);
+    }
+
+    public HospitalNode getNodeByRowId(long id)
+    {
+        int nodeId = (int)((id >> 48) & 0xFFFF);
+        return getNode(nodeId);
+    }
+
+    public HospitalNode getLocalNode()
+    {
+        return nodes.get(localNodeId);
     }
 
     public void addNode(HospitalNode n)
@@ -43,16 +65,18 @@ class HospitalNetwork
         return sb.toString();
     }
 
-    public static HospitalNetwork fromString(String str) {
-        HospitalNetwork net = new HospitalNetwork();
+    public void loadFromString(String str) {
+        nodes = new TreeMap<>();
 
         String lines[] = str.split("\n");
         for (String line : lines) {
             HospitalNode node = HospitalNode.fromString(line);
             if (node != null) {
-                net.addNode(node);
+                addNode(node);
+                if (!node.isReplica()) {
+                    localNodeId = node.getId();
+                }
             }
         }
-        return net;
     }
 }

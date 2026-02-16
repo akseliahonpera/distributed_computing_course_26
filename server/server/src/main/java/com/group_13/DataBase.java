@@ -2,6 +2,7 @@ package com.group_13;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -11,16 +12,17 @@ import com.zaxxer.hikari.HikariDataSource;
 public class DataBase {
     private HikariDataSource dataSource = null;
     private String dbName = null;
+    private String dbPath = null;
+    private String dbUser = null;
+    private String dbPw = null;
 
     public DataBase(String dbName, String dbPath, String dbUser, String dbPw) {
         try {
             this.dbName = dbName;
+            this.dbPath = dbPath;
+            this.dbUser = dbUser;
+            this.dbPw = dbPw;
 
-            dataSource = createDataSource(dbPath, dbName, dbUser, dbPw);
-            if (dataSource == null) {
-                System.out.println("Failed to connect database!!");
-                return;
-            }
             if (!databaseExists(dbName)) {
                 System.out.println("Database not found! Creating new DB");
                 createDatabase(dbName);
@@ -28,6 +30,10 @@ public class DataBase {
                 System.out.println("Database found!");
             }
 
+            dataSource = createDataSource();
+            if (dataSource == null) {
+                System.out.println("Failed to connect database!!");
+            }
         } catch (Exception e) {
             System.out.println(e);
             System.out.println("Failed to open database!");
@@ -41,7 +47,7 @@ public class DataBase {
         return conn;
     }
 
-    private static HikariDataSource createDataSource(String dbPath, String dbName, String dbUser, String dbPw)
+    private HikariDataSource createDataSource()
     {
         try {
             HikariConfig config = new HikariConfig();
@@ -62,8 +68,13 @@ public class DataBase {
         }
     }
 
+    private Connection getNewConnection() throws Exception
+    {
+        return DriverManager.getConnection(dbPath, dbUser, dbPw);
+    }
+
     private boolean databaseExists(String dbName) throws Exception {
-        try (Connection conn = getConnection()) {
+        try (Connection conn = getNewConnection()) {
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet rs = meta.getCatalogs();
             while (rs.next()) {
@@ -79,7 +90,7 @@ public class DataBase {
     private void createDatabase(String dbName) {
         System.out.println("Creating database: " + dbName);
         String createDB_string = "CREATE DATABASE " + dbName;
-        try (Connection conn = getConnection(); Statement sqlstatement = conn.createStatement()) {
+        try (Connection conn = getNewConnection(); Statement sqlstatement = conn.createStatement()) {
             sqlstatement.execute(createDB_string);
         } catch (Exception e) {
             System.out.println(e);
@@ -105,7 +116,7 @@ public class DataBase {
         }
     }
 
-    private void createTable(DataBaseTable table) {
+    private void createTable(DataBaseTable table, long startId) {
         System.out.println("Creating table: " + table.getName());
 
         try (Connection conn = getConnection(); Statement sqlStatement = conn.createStatement()) {
@@ -125,7 +136,8 @@ public class DataBase {
                 sb.append(table.getVarType(column));
                 first = false;
             }
-            sb.append(")");
+            sb.append(") AUTO_INCREMENT = ");
+            sb.append(startId);
             sqlStatement.execute(sb.toString());
         } catch (Exception e) {
             System.out.println(e);
@@ -155,15 +167,15 @@ public class DataBase {
         }
     }
 
-    public void defineTable(DataBaseTable table) {
+    public void defineTable(DataBaseTable table, long startId) {
         if (!tableExists(table.getName())) {
-            createTable(table);
+            createTable(table, startId);
         }
         if (!tableColumnsMatches(table)) {
             System.out.println("WARNING!!!!");
             System.out.println("Table columns doesn't match definition!");
             dropTable(table.getName());
-            createTable(table);
+            createTable(table, startId);
         } else {
             System.out.println("Table " + table.getName() + " Ok!");
         }
