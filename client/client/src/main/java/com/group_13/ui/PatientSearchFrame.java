@@ -19,15 +19,16 @@ public class PatientSearchFrame extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(PatientSearchFrame.class.getName());
 
     private Patient patient;
-
+    PatientPanel instanceReference;
     /**
      * Creates new form PatientSearchFrame
      */
-    public PatientSearchFrame() {
+    public PatientSearchFrame(PatientPanel patientpanelInstance) {
         initComponents();
         setTitle("Patient search");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        instanceReference = patientpanelInstance;
     }
 
     /**
@@ -89,7 +90,7 @@ public class PatientSearchFrame extends javax.swing.JFrame {
             
             try {
                 Patient[] patientlist = PatientService.getInstance().getPatient(patient).getData();
-                PatientPanel patpan = new PatientPanel(patientlist);
+                instanceReference.passQueryResults(patientlist);
                 
             } catch (Exception g) {
                 // TODO Auto-generated catch block

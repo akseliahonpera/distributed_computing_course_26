@@ -58,43 +58,6 @@ public class PatientPanel extends javax.swing.JPanel {
     }
 
 
-public PatientPanel(Patient[] patientlist) {
-        initComponents();
-        jTable1.setModel(model);
-        passQueryResults(patientlist);
-
-        jTable1.getSelectionModel().addListSelectionListener(e -> {
-
-            if (!e.getValueIsAdjusting()) {
-
-                int row = jTable1.getSelectedRow();
-
-                if (row >= 0) {
-                    Patient selected = model.getPatient(row);
-
-                    firePatientSelected(selected);
-                }
-            }
-        });
-
-        jTable1.addMouseListener(
-                new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt
-            ) {
-                if (evt.getClickCount() == 2) { // double-click
-                    int row = jTable1.getSelectedRow();
-                    if (row >= 0) {
-                        Patient selected = model.getPatient(row);
-                        openPatientFrame(selected);
-                    }
-                }
-            }
-        }
-        );
-    }
-
-
 
 
     public PatientPanel getPatientPanelInstance(){
@@ -244,7 +207,7 @@ public PatientPanel(Patient[] patientlist) {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         javax.swing.SwingUtilities.invokeLater(() -> {
-            PatientSearchFrame frame = new PatientSearchFrame();
+            PatientSearchFrame frame = new PatientSearchFrame(getPatientPanelInstance());
             frame.setVisible(true);
         });
     }//GEN-LAST:event_jButton1ActionPerformed
