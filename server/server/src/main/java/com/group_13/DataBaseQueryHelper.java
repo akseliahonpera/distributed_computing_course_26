@@ -97,19 +97,20 @@ class DataBaseQueryHelper
     }
     /*https://stackoverflow.com/questions/5902310/how-do-i-validate-a-timestamp
     
-    Check if inoutstring is somewhat correct for timestamp for mysql80*/
+    Check if inoutstring is somewhat correct for timestamp for mysql80
+    
+    THIS SHOULD BE IMPLEMENTED IN FRONTEND!!! SUAATANA
+    */
     public static boolean isTimeStampValid(String inputString)
-{ 
-    SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
-    try{
-       format.parse(inputString);
-       return true;
+    { 
+        SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        try {
+            format.parse(inputString);
+            return true;
+        } catch(ParseException e) {
+            return false;
+        }
     }
-    catch(ParseException e)
-    {
-        return false;
-    }
-}
 
     static long insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
     {
@@ -128,10 +129,12 @@ class DataBaseQueryHelper
                     object.getString(key).length() == 0) {
                     continue;
                 }
-                /* Check if dateofbirth is in correct timeformat and skip dob if not */
+                /* Check if dateofbirth is in correct timeformat and skip dob if not 
+                THIS SHOULD BE IMPLEMENTED IN FRONTEND!!! SEMMILÄ!!!!
+                */
                 if (key.equalsIgnoreCase("dateofbirth")) {
                     String tempTime = object.getString(key);
-                    if (!isTimeStampValid(tempTime)){
+                    if (!isTimeStampValid(tempTime)) {
                         continue;
                     }
                 }

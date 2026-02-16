@@ -90,9 +90,6 @@ public class RequestHandler implements HttpHandler
 
         long id = Long.parseLong(query.get("id"));
 
-        System.out.println("Update request with ID: " + Long.toString(id));
-        System.out.println("JSON: " + object.toString());
-
         if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
             forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "UPDATE");
             return;
@@ -139,7 +136,6 @@ public class RequestHandler implements HttpHandler
             URI uri = t.getRequestURI();
             Map<String, String> query = ServerUtility.parseQuery(t);
             System.out.println(uri.toString());
-            System.out.println(t.getRequestURI().getQuery());
 
             if (uri.getPath().equals("/api/auth/token")) {
                 HandleAuthRequest(t);
@@ -169,8 +165,6 @@ public class RequestHandler implements HttpHandler
             }
 
             String method = t.getRequestMethod();
-
-            System.out.println("Method: " + method);
 
             if (method.equalsIgnoreCase("POST")) {
                 handlePostRequest(t, query, table);
