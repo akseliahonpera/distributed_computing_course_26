@@ -70,7 +70,7 @@ public class Server
             });*/
         
 
-            HttpServer server = HttpServer.create(new InetSocketAddress(8001),0);
+            HttpServer server = HttpServer.create(new InetSocketAddress(6969),0);
 
             server.createContext("/api", new RequestHandler());
             server.setExecutor(Executors.newCachedThreadPool()); 

@@ -39,10 +39,8 @@ class DataBaseQueryHelper
         ArrayList<String> values = new ArrayList<>();
         boolean first = true;
         for (String key : params.keySet()) {
-            if (!validColumns.contains(key)) {
-                continue;
-            }
-            if (params.get(key).length() == 0) {
+            if (!validColumns.contains(key) ||
+                params.get(key).length() == 0) {
                 continue;
             }
             if (!first) {
@@ -108,10 +106,9 @@ class DataBaseQueryHelper
 
             boolean first = true;
             for (String key : object.keySet()) {
-                if (!validColumns.contains(key)) {
-                    continue;
-                }
-                if (key.equalsIgnoreCase("id")) {
+                if (!validColumns.contains(key) ||
+                    key.equalsIgnoreCase("id") || 
+                    object.getString(key).length() == 0) {
                     continue;
                 }
                 if (first) {
@@ -172,10 +169,9 @@ class DataBaseQueryHelper
 
             boolean first = true;
             for (String key : object.keySet()) {
-                if (!validColumns.contains(key)) {
-                    continue;
-                }
-                if (key.equalsIgnoreCase("id")) {
+                if (!validColumns.contains(key) ||
+                    key.equalsIgnoreCase("id") || 
+                    object.getString(key).length() == 0) {
                     continue;
                 }
                 if (first) {
