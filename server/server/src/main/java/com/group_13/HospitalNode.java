@@ -8,18 +8,6 @@ public class HospitalNode
         this.name = name;
         this.address = address;
         this.isReplica = isReplica;
-
-        System.out.println("id ");
-        System.out.println(id);
-
-        System.out.println("name ");
-        System.out.println(name);
-
-        System.out.println("address ");
-        System.out.println(address);
-
-        System.out.println("isReplica ");
-        System.out.println(isReplica);
     }
 
     private int id;
