@@ -44,7 +44,7 @@ public class PatientAPI extends BaseAPI {
 
     public ApiResponse getPatientById(Patient patient) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(PATIENTS_ENDPOINT + "?PatientID="
+                .uri(URI.create(PATIENTS_ENDPOINT + "?id="
                         + URLEncoder.encode(patient.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .GET()
@@ -85,9 +85,9 @@ public class PatientAPI extends BaseAPI {
     public ApiResponse updatePatient(Patient patient) throws Exception {
 
         String jsonBody = objectMapper.writeValueAsString(patient);
-
+        String queryString = "?id="+patient.getId();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(PATIENTS_ENDPOINT))
+                .uri(URI.create(PATIENTS_ENDPOINT + queryString))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getToken())
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
@@ -98,8 +98,9 @@ public class PatientAPI extends BaseAPI {
     }
 
     public ApiResponse deletePatient(Patient patient) throws Exception {
+        
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(PATIENTS_ENDPOINT + "?patientID="
+                .uri(URI.create(PATIENTS_ENDPOINT + "?id="
                         + URLEncoder.encode(patient.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .DELETE()

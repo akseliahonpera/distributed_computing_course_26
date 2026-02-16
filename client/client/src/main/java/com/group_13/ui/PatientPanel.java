@@ -6,6 +6,8 @@ package com.group_13.ui;
 
 import java.util.*;
 import com.group_13.model.*;
+import com.group_13.service.PatientService;
+
 import javax.swing.JOptionPane;
 
 /**
@@ -248,6 +250,12 @@ public class PatientPanel extends javax.swing.JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             //TODO call deletePatient from patientservicew
             model.deletePatient(patient);
+            try {
+                PatientService.getInstance().deletePatient(patient);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             patient = null;
             JOptionPane.showMessageDialog(this,
                     "Patient deleted successfully.",
