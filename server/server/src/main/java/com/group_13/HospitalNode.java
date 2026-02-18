@@ -57,7 +57,8 @@ public class HospitalNode
     {
         try {
             String parts[] = str.split(",");
-            return new HospitalNode(Integer.parseInt(parts[0]), parts[1], parts[2], Boolean.parseBoolean(parts[3]));
+            // return new HospitalNode(Integer.parseInt(parts[0]), parts[1], parts[2], Boolean.parseBoolean(parts[3]));
+            return new HospitalNode(Integer.parseInt(parts[0]), parts[1], parts[2], parts[3].strip().equalsIgnoreCase("true"));
         } catch (NumberFormatException e) {
             return null;
         }
