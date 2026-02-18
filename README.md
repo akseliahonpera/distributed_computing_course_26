@@ -10,6 +10,8 @@ mvn clean compile
 mvn exec:java
 
 ** SERVERIN AJO **
+
+
 cd \server\server
 mvn clean install
 java -jar target\server-1.0-SNAPSHOT.jar
