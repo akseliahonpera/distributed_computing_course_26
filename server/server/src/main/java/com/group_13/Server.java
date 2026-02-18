@@ -45,6 +45,8 @@ public class Server
         initHospitalNetwork("C:\\Users\\JONIK\\distributed_systems\\server\\server\\src\\main\\java\\com\\group_13\\node2_conf.txt");
 
         DataBaseManager.getOwnDataBase();
+
+        System.out.println(HospitalNetwork.getInstance());
         
         try
         {
