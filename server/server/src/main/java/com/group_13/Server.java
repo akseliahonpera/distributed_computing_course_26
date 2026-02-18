@@ -42,7 +42,7 @@ public class Server
 
     public static void main( String[] args ) throws IOException, Exception
     {
-        initHospitalNetwork("C:\\Users\\JONIK\\distributed_systems\\server\\server\\src\\main\\java\\com\\group_13\\node2_conf.txt");
+        initHospitalNetwork("node2_conf.txt");
 
         DataBaseManager.getOwnDataBase();
 
