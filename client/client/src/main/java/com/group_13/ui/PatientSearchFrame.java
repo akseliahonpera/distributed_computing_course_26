@@ -84,8 +84,7 @@ public class PatientSearchFrame extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
             patient = new Patient();
             patientDataPanel1.updatePatientData(patient);
-            // TODO: need to implement search method in patient service/API
-            // can call getAllPatients as a placeholder
+            // TODO: 
             
             try {
                 Patient[] patientlist = PatientService.getInstance().getPatient(patient).getData();
