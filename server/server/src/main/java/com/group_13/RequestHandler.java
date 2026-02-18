@@ -38,15 +38,18 @@ public class RequestHandler implements HttpHandler
 
     public void handlePostRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
+        System.out.println("Handling POST request for table " + table + " with query: " + query);
         String bodyText = ServerUtility.GetBodyText(t);
 
         JSONObject object = new JSONObject(bodyText);
 
-        if (object.has("patientid")) {
-            long id = object.getLong("patientid");
-            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "POST");
-            return;
-        }
+        // kommasin tämän pois koska luodut recordit jäi tähän jumiin ja koko paska jääty -Joni
+        // Patienttien kanssa ei ole ongelmaa koska niillä ei ole patientId:tä luotaessa, mutta recordeilla on.
+        // if (object.has("patientid")) {
+        //     long id = object.getLong("patientid");
+        //     forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "POST");
+        //     return;
+        // }
 
         long newRowId = DataBaseQueryHelper.insert(DataBaseManager.getOwnDataBase(), table, object);
 
@@ -57,6 +60,13 @@ public class RequestHandler implements HttpHandler
 
     public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
+        // TODO: Tämä ei toimi oikein getRecordsByPatientId:n ja getRecordin kanssa. Lähettää aina kaikki recordit id:stä ja muista parametreista riippumatta. -Joni
+        // Server: Handling GET request for table records with query: {patientID=562949953421313}
+        // Client: Successfully fetched 5 records for patient: asd asd, ID: 562949953421313
+        // Server: Handling GET request for table records with query: {patientID=562949953421317}
+        // Client: Successfully fetched 5 records for patient: a a, ID: 562949953421317
+        System.out.println("Handling GET request for table " + table + " with query: " + query);
+
         JSONArray allResults = new JSONArray();
         ArrayList<HospitalNode> nodes = HospitalNetwork.getInstance().getAllNodes();
         for (HospitalNode n : nodes) {
@@ -70,6 +80,7 @@ public class RequestHandler implements HttpHandler
 
     public void handleDeleteRequest(HttpExchange t, Map<String, String> query, String table) throws  Exception
     {
+        System.out.println("Handling DELETE request for table " + table + " with query: " + query);
         long id = Long.parseLong(query.get("id"));
 
         if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
@@ -86,6 +97,7 @@ public class RequestHandler implements HttpHandler
 
     public void handleUpdateRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
+        System.out.println("Handling UPDATE request for table " + table + " with query: " + query);
         JSONObject object = new JSONObject(ServerUtility.GetBodyText(t));
 
         long id = Long.parseLong(query.get("id"));

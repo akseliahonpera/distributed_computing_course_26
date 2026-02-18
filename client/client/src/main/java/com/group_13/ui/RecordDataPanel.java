@@ -53,7 +53,7 @@ public class RecordDataPanel extends javax.swing.JPanel {
         jTextField3 = new javax.swing.JTextField();
         jTextField4 = new javax.swing.JTextField();
 
-        jLabel1.setText("Datetime");
+        jLabel1.setText("Datetime (yyyy-MM-dd)");
 
         jLabel2.setText("Operation");
 

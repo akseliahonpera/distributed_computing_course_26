@@ -5,16 +5,18 @@
 package com.group_13.ui;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import com.group_13.model.Record;
 import com.group_13.model.Patient;
+import com.group_13.model.Result;
+import com.group_13.service.RecordService;
 
 /**
  *
  * @author JONIK
  */
 public class RecordModifyFrame extends javax.swing.JFrame {
-
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RecordModifyFrame.class.getName());
 
     private Record record;
     private Patient patient;
@@ -29,8 +31,22 @@ public class RecordModifyFrame extends javax.swing.JFrame {
         recordDataPanel1.setRecordData(record);
 
         jButton1.addActionListener(e -> {
-            recordDataPanel1.updateRecordData(record, patient);
-            // TODO: Call updateRecord(record)from RecordService
+            try {
+                recordDataPanel1.updateRecordData(record, patient);
+                Result<Void> result = RecordService.getInstance().updateRecord(record);
+                if (result.isSuccess()) {
+                    // TODO RecordTablen voisi päivittää näyttämään uuden recordin ilman että koko listaa haetaan uudestaan
+                    // recordTable.updateRecord(record); tän tyyppisesti
+                    JOptionPane.showMessageDialog(this, "Record updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to update record: ", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                dispose();
+            } catch (Exception ex) {
+                // TODO Auto-generated catch block
+                ex.printStackTrace();
+            }
+    
         });
 
         jButton2.addActionListener(e -> dispose());

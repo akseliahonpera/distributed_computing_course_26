@@ -6,7 +6,11 @@ package com.group_13.ui;
 
 import com.group_13.model.Patient;
 import com.group_13.model.Record;
+import com.group_13.service.RecordService;
+import com.group_13.model.Result;
+
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -83,7 +87,21 @@ public class RecordCreateFrame extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         record = new Record();
         recordDataPanel1.updateRecordData(record, patient);
-        // TODO call createRecord from RecordService. Maybe confirm window?
+        try {
+            Result<Void> result = RecordService.getInstance().createRecord(record);
+            if (result.isSuccess()) {
+                // TODO RecordTablen voisi päivittää näyttämään uuden recordin ilman että koko listaa haetaan uudestaan
+                // recordTable.addRecord(record); tän tyyppisesti
+                JOptionPane.showMessageDialog(this, "Record created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to create record: ", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Exception occurred while creating record: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
+        //dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed

@@ -19,16 +19,16 @@ public class PatientSearchFrame extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(PatientSearchFrame.class.getName());
 
     private Patient patient;
-    PatientPanel instanceReference;
+    private PatientPanel patientPanel;
     /**
      * Creates new form PatientSearchFrame
      */
-    public PatientSearchFrame(PatientPanel patientpanelInstance) {
+    public PatientSearchFrame() {
         initComponents();
         setTitle("Patient search");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        instanceReference = patientpanelInstance;
+        patientPanel = PatientPanel.getInstance();
     }
 
     /**
@@ -82,7 +82,6 @@ public class PatientSearchFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        jButton1.addActionListener(e -> {
             patient = new Patient();
             patientDataPanel1.updatePatientData(patient);
             // TODO: need to implement search method in patient service/API
@@ -90,19 +89,16 @@ public class PatientSearchFrame extends javax.swing.JFrame {
             
             try {
                 Patient[] patientlist = PatientService.getInstance().getPatient(patient).getData();
-                instanceReference.passQueryResults(patientlist);
+                patientPanel.passQueryResults(patientlist);
                 
             } catch (Exception g) {
                 // TODO Auto-generated catch block
                 g.printStackTrace();
             }
-        });
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        jButton2.addActionListener(e -> {
             dispose();
-        });
     }//GEN-LAST:event_jButton2ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -33,6 +33,8 @@ public class DataBase {
             dataSource = createDataSource();
             if (dataSource == null) {
                 System.out.println("Failed to connect database!!");
+            } else {
+                System.out.println("Database connection OK!");
             }
         } catch (Exception e) {
             System.out.println(e);

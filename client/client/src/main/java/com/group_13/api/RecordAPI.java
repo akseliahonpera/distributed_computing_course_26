@@ -44,9 +44,23 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
+    public ApiResponse getRecord(Record record) throws Exception {
+
+        String queryString = recordToQueryString(record);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RECORDS_ENDPOINT + queryString))
+                .header("Authorization", "Bearer " + getToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
+    }
+
     public ApiResponse getRecordById(Record record) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(RECORDS_ENDPOINT + "?ID="
+                .uri(URI.create(RECORDS_ENDPOINT + "?id="
                         + URLEncoder.encode(record.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .GET()
@@ -58,7 +72,7 @@ public class RecordAPI extends BaseAPI {
 
     public ApiResponse getRecordsByPatientId(Patient patient) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(RECORDS_ENDPOINT + "?patientID="
+                .uri(URI.create(RECORDS_ENDPOINT + "?patientid=" // TODO lowercase?
                         + URLEncoder.encode(patient.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .GET()
@@ -88,7 +102,7 @@ public class RecordAPI extends BaseAPI {
         String jsonBody = objectMapper.writeValueAsString(record);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(RECORDS_ENDPOINT + "?ID="
+                .uri(URI.create(RECORDS_ENDPOINT + "?id="
                         + URLEncoder.encode(record.getId(), "UTF-8")))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + getToken())
@@ -101,7 +115,7 @@ public class RecordAPI extends BaseAPI {
 
     public ApiResponse deleteRecord(Record record) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(RECORDS_ENDPOINT + "?ID="
+                .uri(URI.create(RECORDS_ENDPOINT + "?id="
                         + URLEncoder.encode(record.getId(), "UTF-8")))
                 .header("Authorization", "Bearer " + getToken())
                 .DELETE()
