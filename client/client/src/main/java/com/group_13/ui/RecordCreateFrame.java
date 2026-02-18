@@ -101,7 +101,7 @@ public class RecordCreateFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Exception occurred while creating record: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
         
-        //dispose();
+        dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed

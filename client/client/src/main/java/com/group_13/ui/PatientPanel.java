@@ -86,10 +86,10 @@ public class PatientPanel extends javax.swing.JPanel {
 
     public void passQueryResults(Patient[] patientlist) {
         if (patientlist == null) {
-            model.setPatients(Collections.emptyList());
+            model.setPatients(new ArrayList<>());
             return;
         }
-        List<Patient> list = Arrays.asList(patientlist);
+        List<Patient> list = new ArrayList<>(Arrays.asList(patientlist));
         model.setPatients(list);
     }
 
@@ -202,12 +202,20 @@ public class PatientPanel extends javax.swing.JPanel {
         });
     }// GEN-LAST:event_jButton2ActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton4ActionPerformed
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {
         if (patient == null) {
             JOptionPane.showMessageDialog(this,
                     "Please select a patient to delete.",
                     "No Selection",
                     JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (patient.getId() == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Cannot delete: patient ID is missing!",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -219,19 +227,31 @@ public class PatientPanel extends javax.swing.JPanel {
                 JOptionPane.WARNING_MESSAGE);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // TODO call deletePatient from patientservicew
-            model.deletePatient(patient);
             try {
-                PatientService.getInstance().deletePatient(patient);
+                Result<Void> result = PatientService.getInstance().deletePatient(patient);
+                if (result.isSuccess()) {
+                    JOptionPane.showMessageDialog(this,
+                            "Patient deleted successfully.",
+                            "Deleted",
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to delete patient!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                model.deletePatient(patient);
+                patient = null;
+
             } catch (Exception e) {
-                // TODO Auto-generated catch block
+                JOptionPane.showMessageDialog(this,
+                        "Error deleting patient: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
-            patient = null;
-            JOptionPane.showMessageDialog(this,
-                    "Patient deleted successfully.",
-                    "Deleted",
-                    JOptionPane.INFORMATION_MESSAGE);
         }
     }// GEN-LAST:event_jButton4ActionPerformed
 

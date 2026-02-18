@@ -228,13 +228,20 @@ public class RecordPanel extends javax.swing.JPanel {
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                RecordService.getInstance().deleteRecord(record);
-                model.deleteRecord(record);
-                clearSelection();
-                JOptionPane.showMessageDialog(this,
-                        "Record deleted successfully.",
-                        "Deleted",
+                Result<Void> result = RecordService.getInstance().deleteRecord(record);
+                if (result.isSuccess()) {
+                    model.deleteRecord(record);
+                    clearSelection();
+                    JOptionPane.showMessageDialog(this,
+                            "Record deleted successfully.",
+                            "Deleted",
                         JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to delete record",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
                         "Error deleting record: " + e.getMessage(),

@@ -60,11 +60,6 @@ public class RequestHandler implements HttpHandler
 
     public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
-        // TODO: Tämä ei toimi oikein getRecordsByPatientId:n ja getRecordin kanssa. Lähettää aina kaikki recordit id:stä ja muista parametreista riippumatta. -Joni
-        // Server: Handling GET request for table records with query: {patientID=562949953421313}
-        // Client: Successfully fetched 5 records for patient: asd asd, ID: 562949953421313
-        // Server: Handling GET request for table records with query: {patientID=562949953421317}
-        // Client: Successfully fetched 5 records for patient: a a, ID: 562949953421317
         System.out.println("Handling GET request for table " + table + " with query: " + query);
 
         JSONArray allResults = new JSONArray();

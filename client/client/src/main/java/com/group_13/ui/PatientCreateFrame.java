@@ -5,16 +5,19 @@
 package com.group_13.ui;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import com.group_13.service.PatientService;
+import com.group_13.service.RecordService;
 import com.group_13.model.Patient;
+import com.group_13.model.Result;
 /**
  *
  * @author JONIK
  */
 public class PatientCreateFrame extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(PatientCreateFrame.class.getName());
+        private Patient patient;
 
     /**
      * Creates new form PatientCreateFrame
@@ -86,11 +89,21 @@ public class PatientCreateFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {//GEN-FIRST:event_jButton1ActionPerformed
-        //call createPatient() from PatientService
-        Patient pat = new Patient(null, null,null,null,null,null,null,null);
-        //lypsä formista tiedot ulos
-        patientDataPanel1.updatePatientData(pat);
-        PatientService.getInstance().createPatient(pat);//rymäytettään servulle lastit
+        patient = new Patient();
+        patientDataPanel1.updatePatientData(patient);
+        try {
+            Result<Void> result = PatientService.getInstance().createPatient(patient);
+            if (result.isSuccess()) {
+                // TODO PatientTablen voisi päivittää näyttämään uuden patientin ilman että koko listaa haetaan uudestaan
+                // recordTable.addRecord(record); tän tyyppisesti
+                JOptionPane.showMessageDialog(this, "Patient created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to create patient: ", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Exception occurred while creating patient: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
