@@ -15,10 +15,9 @@ import javax.net.ssl.TrustManagerFactory;
 
 import com.sun.net.httpserver.HttpServer;
 
-public class Server
-{
-    private static SSLContext myServerSSLContext(String keystorePath, String keystorePw) throws Exception
-    {
+
+public class Server {
+    private static SSLContext myServerSSLContext(String keystorePath, String keystorePw) throws Exception {
         char[] passphrase = keystorePw.toCharArray();
 
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -40,43 +39,72 @@ public class Server
         HospitalNetwork.getInstance().loadFromString(Files.readString(Path.of(confFilePath)));
     }
 
-    public static void main( String[] args ) throws IOException, Exception
-    {
-        initHospitalNetwork("node2_conf.txt");
+    public static void main(String[] args) throws IOException, Exception {
+
+        String configFile = null;
+        int serverID = (args.length == 0) ? 0 : Integer.parseInt(args[0]);
+
+        String os_name = System.getProperty("os.name");
+
+        // Testaan ajaa windows ympäristössä useampaa serveriä erillisissä prosesseissa
+        if (os_name.toLowerCase().matches(".*windows.*")) {
+
+            if (serverID < 2) {
+                new ProcessBuilder(
+                        "cmd", "/c", "start", "Server " + (serverID + 1),
+                        "cmd", "/k", "java -jar target\\server-1.0-SNAPSHOT.jar " + (serverID + 1)).start();
+            }
+
+            configFile = String.format("node%d_conf.txt", serverID);
+
+        } else {
+            // Tässä asetukset servulle jos OS joku muu ku windows.
+            configFile = "node2_conf.txt";
+        }
+
+        initHospitalNetwork(configFile);
+
+        String serverName = HospitalNetwork.getInstance().getLocalNode().getName();
+        String fullAddress = HospitalNetwork.getInstance().getLocalNode().getAddress();
+        Integer portNumber = Integer.parseInt(fullAddress.split(":")[1]);
+
+        if (os_name.toLowerCase().matches(".*windows.*")) {
+            System.out.print("\033]0;" + ("Server: " + fullAddress + " " + serverName) + "\007");
+        }
+
+        System.out.println("Current hospital network:");
+        System.out.println(HospitalNetwork.getInstance());
 
         DataBaseManager.getOwnDataBase();
+        try {
+            System.out.println("Server address: " + fullAddress);
+            System.out.println(serverName + " started...");
 
-        System.out.println(HospitalNetwork.getInstance());
-        
-        try
-        {
-            System.out.println("Starting server!");
+            // SSL DISABLED FOR TESTING PURPOSES!!!
 
+            // SSLContext sslContext = myServerSSLContext("keystore.jks", "salasana1");
 
-            //SSL DISABLED FOR TESTING PURPOSES!!!
+            // HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
 
-            //SSLContext sslContext = myServerSSLContext("keystore.jks", "salasana1");
+            /*
+             * server.setHttpsConfigurator (new HttpsConfigurator(sslContext)
+             * {
+             * public void configure (HttpsParameters params) {
+             * 
+             * //InetSocketAddress remote = params.getClientAddress();
+             * SSLContext c = getSSLContext();
+             * SSLParameters sslparams = c.getDefaultSSLParameters();
+             * 
+             * params.setSSLParameters(sslparams);
+             * }
+             * });
+             */
 
-            //HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
-
-            /*server.setHttpsConfigurator (new HttpsConfigurator(sslContext) 
-            {
-                public void configure (HttpsParameters params) {
-
-                    //InetSocketAddress remote = params.getClientAddress();
-                    SSLContext c = getSSLContext();
-                    SSLParameters sslparams = c.getDefaultSSLParameters();
-
-                    params.setSSLParameters(sslparams);
-                }
-            });*/
-        
-
-            HttpServer server = HttpServer.create(new InetSocketAddress(6969),0);
+            HttpServer server = HttpServer.create(new InetSocketAddress(portNumber), 0);
 
             server.createContext("/api", new RequestHandler());
-            server.setExecutor(Executors.newCachedThreadPool()); 
-            server.start(); 
+            server.setExecutor(Executors.newCachedThreadPool());
+            server.start();
         } catch (FileNotFoundException e) {
             System.out.println("Certificate not found");
 
