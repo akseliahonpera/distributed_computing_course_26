@@ -9,9 +9,7 @@ cd \client\client
 mvn clean compile
 mvn exec:java
 
-** SERVERIN AJO **
-
-
-cd \server\server
-mvn clean install
-java -jar target\server-1.0-SNAPSHOT.jar
+** SERVERIN AJO **<br>
+cd \server\server<br>
+mvn clean install<br>
+java -jar target\server-1.0-SNAPSHOT.jar<br>
