@@ -14,7 +14,7 @@ import com.group_13.service.AuthService;
  */
 
 public abstract class BaseAPI {
-    protected static final String BASE_URL = "http://80.220.41.107:6969/api"; // SET URL HERE
+    protected static final String BASE_URL = "http://127.0.0.1:8001/api"; // SET URL HERE
     protected static final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();

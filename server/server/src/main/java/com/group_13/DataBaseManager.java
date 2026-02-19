@@ -108,7 +108,8 @@ public class DataBaseManager
 
             String dbPath = "jdbc:mysql://localhost:3306/";
             String dbName = getDataBaseName(node);
-            String dbUser = "DS26Server";
+            //String dbName = "ds26";
+            String dbUser = "root";
             String dbPw = "Gambiinakiuas522";
 
             long startId = node.getId();
