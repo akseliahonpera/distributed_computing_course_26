@@ -19,7 +19,7 @@ public class RecordTable extends AbstractTableModel {
     private List<Record> visibleRecords = new ArrayList<>();
 
     private final String[] columns = {
-        "ID", "Datetime", "Responsible"
+            "ID", "Datetime", "Responsible"
     };
 
     public void setRecords(List<Record> list) {
@@ -27,13 +27,13 @@ public class RecordTable extends AbstractTableModel {
         visibleRecords = new ArrayList<>(list);
         fireTableDataChanged();
     }
-    
+
     public void deleteRecord(Record record) {
         allRecords.remove(record);
         visibleRecords.remove(record);
         fireTableDataChanged();
     }
-    
+
     public void showRecordsForPatient(String patientId) {
 
         visibleRecords.clear();
@@ -43,14 +43,35 @@ public class RecordTable extends AbstractTableModel {
                 visibleRecords.add(r);
             }
         }
+        fireTableDataChanged();
+    }
 
+    public void updateRecord(Record updatedRecord) {
+        for (int i = 0; i < visibleRecords.size(); i++) {
+            if (visibleRecords.get(i).getId().equals(updatedRecord.getId())) {
+                visibleRecords.set(i, updatedRecord);
+                for (int j = 0; j < allRecords.size(); j++) {
+                    if (allRecords.get(j).getId().equals(updatedRecord.getId())) {
+                        allRecords.set(j, updatedRecord);
+                        break;
+                    }
+                }
+                fireTableRowsUpdated(i, i);
+                return;
+            }
+        }
+    }
+
+    public void addRecord(Record record) {
+        allRecords.add(record);
+        visibleRecords.add(record);
         fireTableDataChanged();
     }
 
     public Record getRecord(int row) {
         return visibleRecords.get(row);
     }
-    
+
     public List<Record> getAllRecords() {
         return visibleRecords;
     }

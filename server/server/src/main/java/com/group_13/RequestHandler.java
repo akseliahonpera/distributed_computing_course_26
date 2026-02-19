@@ -35,17 +35,38 @@ public class RequestHandler implements HttpHandler
         DataBaseQueryHelper.insertChange(localDB, table, type, rowId, epochTimeMs);
     }
 
+    private void handleSyncRequest(HttpExchange t, Map<String, String> query) throws Exception
+    {
+        DataBase localDB = DataBaseManager.getOwnDataBase();
+
+        long epochTimeMs = Long.parseLong(query.get("since"));
+        
+        JSONArray changes = DataBaseQueryHelper.getChangesSince(localDB, epochTimeMs);
+
+        ServerUtility.sendResponse(t, changes.toString(), ServerUtility.HttpStatus.OK);
+    }
+
 
     public void handlePostRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
+        System.out.println("Handling POST request for table " + table + " with query: " + query);
         String bodyText = ServerUtility.GetBodyText(t);
 
         JSONObject object = new JSONObject(bodyText);
 
+        // kommasin tämän pois koska luodut recordit jäi tähän jumiin ja koko paska jääty -Joni
+        // Patienttien kanssa ei ole ongelmaa koska niillä ei ole patientId:tä luotaessa, mutta recordeilla on.
+
+        // unohdin lisätä tarkistuksen kenelle patient kuuluu
+        // Jäätyminen johtu siitä, että jokainen recordi joka sisälti viittauksen patienttiin yritettiin ohjata toiselle sairaalanodelle
+        // ohjausta ei ollut implementoitu -> serveri ei ikinä lähetä http requestin vastausta -> clientti jää odottamaan
+        // -Ara
         if (object.has("patientid")) {
             long id = object.getLong("patientid");
-            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "POST");
-            return;
+            if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
+                forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "POST");
+                return;
+            }
         }
 
         long newRowId = DataBaseQueryHelper.insert(DataBaseManager.getOwnDataBase(), table, object);
@@ -57,6 +78,8 @@ public class RequestHandler implements HttpHandler
 
     public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
+        System.out.println("Handling GET request for table " + table + " with query: " + query);
+
         JSONArray allResults = new JSONArray();
         ArrayList<HospitalNode> nodes = HospitalNetwork.getInstance().getAllNodes();
         for (HospitalNode n : nodes) {
@@ -70,6 +93,7 @@ public class RequestHandler implements HttpHandler
 
     public void handleDeleteRequest(HttpExchange t, Map<String, String> query, String table) throws  Exception
     {
+        System.out.println("Handling DELETE request for table " + table + " with query: " + query);
         long id = Long.parseLong(query.get("id"));
 
         if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
@@ -86,6 +110,7 @@ public class RequestHandler implements HttpHandler
 
     public void handleUpdateRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
+        System.out.println("Handling UPDATE request for table " + table + " with query: " + query);
         JSONObject object = new JSONObject(ServerUtility.GetBodyText(t));
 
         long id = Long.parseLong(query.get("id"));
@@ -158,6 +183,7 @@ public class RequestHandler implements HttpHandler
             switch (uri.getPath()) {
                 case "/api/patients" -> table = "patients";
                 case "/api/records" -> table = "records";
+                case "/api/sync" -> table = "sync";
                 default -> {
                     ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.NOT_FOUND);
                     return;
@@ -166,6 +192,14 @@ public class RequestHandler implements HttpHandler
 
             String method = t.getRequestMethod();
 
+            if (table.equals("sync")) {
+                if (method.equalsIgnoreCase("GET")) {
+                    handleSyncRequest(t, query);
+                } else {
+                    ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.FORBIDDEN);
+                }
+                return;
+            }
             if (method.equalsIgnoreCase("POST")) {
                 handlePostRequest(t, query, table);
             } else if (method.equalsIgnoreCase("GET")) {

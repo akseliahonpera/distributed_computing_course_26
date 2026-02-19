@@ -7,6 +7,12 @@ import java.util.Map;
 
 import com.group_13.model.ApiResponse;
 
+/**
+ * Handles API requests related to authentication.
+ * Extends BaseAPI to inherit common configurations.
+ * Implements methods for user login and logout and token handling.
+ */
+
 public class AuthAPI extends BaseAPI {
     private static final AuthAPI INSTANCE = new AuthAPI();
     private static final String AUTH_ENDPOINT = BASE_URL + "/auth/token";

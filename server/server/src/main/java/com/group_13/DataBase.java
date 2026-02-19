@@ -5,6 +5,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -16,12 +17,16 @@ public class DataBase {
     private String dbUser = null;
     private String dbPw = null;
 
+    private ArrayList<DataBaseTable> tableDefinitions = null;
+
     public DataBase(String dbName, String dbPath, String dbUser, String dbPw) {
         try {
             this.dbName = dbName;
             this.dbPath = dbPath;
             this.dbUser = dbUser;
             this.dbPw = dbPw;
+
+            tableDefinitions = new ArrayList<>();
 
             if (!databaseExists(dbName)) {
                 System.out.println("Database not found! Creating new DB");
@@ -33,6 +38,8 @@ public class DataBase {
             dataSource = createDataSource();
             if (dataSource == null) {
                 System.out.println("Failed to connect database!!");
+            } else {
+                System.out.println("Database connection OK!");
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -179,5 +186,16 @@ public class DataBase {
         } else {
             System.out.println("Table " + table.getName() + " Ok!");
         }
+
+        tableDefinitions.add(table);
+    }
+
+    DataBaseTable getDefinition(String tableName) {
+        for (DataBaseTable t : tableDefinitions) {
+            if (t.getName().equalsIgnoreCase(tableName)) {
+                return t;
+            }
+        }
+        return null;
     }
 }

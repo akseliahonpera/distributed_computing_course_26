@@ -1,5 +1,9 @@
 package com.group_13;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -10,6 +14,7 @@ public class HospitalNetwork
 
     private TreeMap<Integer, HospitalNode> nodes = null;
     private int localNodeId = -1;
+    private String confPath = null;
     private HospitalNetwork()
     {
         nodes = new TreeMap<>();
@@ -65,18 +70,32 @@ public class HospitalNetwork
         return sb.toString();
     }
 
-    public void loadFromString(String str) {
-        nodes = new TreeMap<>();
+    public void loadFromFile(String filePath) {
+        try {
+            String str = Files.readString(Path.of(filePath));
+            confPath = filePath;
+            nodes = new TreeMap<>();
 
-        String lines[] = str.split("\n");
-        for (String line : lines) {
-            HospitalNode node = HospitalNode.fromString(line);
-            if (node != null) {
-                addNode(node);
-                if (!node.isReplica()) {
-                    localNodeId = node.getId();
+            String lines[] = str.split("\n");
+            for (String line : lines) {
+                HospitalNode node = HospitalNode.fromString(line);
+                if (node != null) {
+                    addNode(node);
+                    if (!node.isReplica()) {
+                        localNodeId = node.getId();
+                    }
                 }
             }
+        } catch (IOException e) {
+            System.out.println("Failed to load network configuration: " + e.getMessage());
+        }
+    }
+    public void save()
+    {
+        try {
+            Files.writeString(Path.of(confPath), this.toString(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            System.out.println("Failed to write network configuration: " + e.getMessage());
         }
     }
 }

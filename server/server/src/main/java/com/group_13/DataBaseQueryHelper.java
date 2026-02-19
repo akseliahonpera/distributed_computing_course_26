@@ -270,4 +270,31 @@ class DataBaseQueryHelper
         }
     }
 
+    static JSONArray getChangesSince(DataBase db, long epochTimeMs) throws Exception
+    {
+        JSONArray jsonArray = new JSONArray();
+
+        try (Connection conn = db.getConnection()) {
+            String query = "SELECT * FROM changelog WHERE timestamp > ?";
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setLong(1, epochTimeMs);
+
+                ResultSet rs = stmt.executeQuery();
+
+                ResultSetMetaData meta = rs.getMetaData();
+                int columnCount = meta.getColumnCount();
+                while (rs.next()) {
+                    JSONObject obj = new JSONObject();
+                    
+                    for (int i = 1; i <= columnCount; i++) {
+                        obj.put(meta.getColumnLabel(i), rs.getObject(i));
+                    }
+                    jsonArray.put(obj);
+                }
+            }
+        }
+        return jsonArray;
+    }
+
 }

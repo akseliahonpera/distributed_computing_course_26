@@ -4,8 +4,12 @@
  */
 package com.group_13.ui;
 
+import javax.swing.JOptionPane;
+
 import com.group_13.model.Patient;
 import com.group_13.model.Record;
+import com.group_13.service.RecordService;
+import com.group_13.model.Result;
 
 /**
  *
@@ -13,6 +17,7 @@ import com.group_13.model.Record;
  */
 public class RecordSearchFrame extends javax.swing.JFrame {
 
+    // NOTE: need to pass selected patient also to be able to fill the patientid into the form
     private Record record;
     private Patient patient;
     /**
@@ -76,8 +81,21 @@ public class RecordSearchFrame extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         record = new Record();
         recordDataPanel1.updateRecordData(record, patient);
-        //TODO: need to implement search method in record service/API
-        // pass createt record object to it
+
+        try {
+            Result<Record[]> result = RecordService.getInstance().getRecord(record);
+            if (result.isSuccess()) {
+                Record[] records = result.getData();
+                RecordPanel.getInstance().passQueryResults(records);
+                JOptionPane.showMessageDialog(this, "Successfully retrieved " + records.length + " records!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Error retrieving records!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error retrieving records: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
