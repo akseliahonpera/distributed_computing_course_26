@@ -44,6 +44,8 @@ public class Server
     {
         initHospitalNetwork("node2_conf.txt");
 
+        System.out.println(HospitalNetwork.getInstance());
+
         DataBaseManager.getOwnDataBase();
         
         try
