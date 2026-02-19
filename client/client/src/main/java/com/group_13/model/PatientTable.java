@@ -12,7 +12,7 @@ public class PatientTable extends AbstractTableModel {
     private List<Patient> patients = new ArrayList<>();
 
     private final String[] columns = {
-        "ID", "First Name", "Last Name"
+            "ID", "First Name", "Last Name"
     };
 
     public void setPatients(List<Patient> list) {
@@ -20,10 +20,25 @@ public class PatientTable extends AbstractTableModel {
         fireTableDataChanged();
     }
 
+    public void updatePatient(Patient updatedPatient) {
+        for (int i = 0; i < patients.size(); i++) {
+            if (patients.get(i).getId().equals(updatedPatient.getId())) {
+                patients.set(i, updatedPatient);
+                fireTableRowsUpdated(i, i);
+                return;
+            }
+        }
+    }
+
+    public void addPatient(Patient patient) {
+        patients.add(patient);
+        fireTableDataChanged();
+    }
+
     public Patient getPatient(int row) {
         return patients.get(row);
     }
-    
+
     public void deletePatient(Patient patient) {
         patients.remove(patient);
         fireTableDataChanged();

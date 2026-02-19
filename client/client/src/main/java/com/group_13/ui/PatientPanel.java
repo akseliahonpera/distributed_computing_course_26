@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  */
 public class PatientPanel extends javax.swing.JPanel {
 
-    private PatientTable model = new PatientTable(); // placeholder
+    private PatientTable table = new PatientTable(); // placeholder
     private Patient patient;
     private PatientSelectionListener listener;
 
@@ -34,7 +34,7 @@ public class PatientPanel extends javax.swing.JPanel {
      */
     private PatientPanel() {
         initComponents();
-        jTable1.setModel(model);
+        jTable1.setModel(table);
         // loadTestData();
 
         jTable1.getSelectionModel().addListSelectionListener(e -> {
@@ -44,7 +44,7 @@ public class PatientPanel extends javax.swing.JPanel {
                 int row = jTable1.getSelectedRow();
 
                 if (row >= 0) {
-                    Patient selected = model.getPatient(row);
+                    Patient selected = table.getPatient(row);
 
                     firePatientSelected(selected);
                 }
@@ -58,7 +58,7 @@ public class PatientPanel extends javax.swing.JPanel {
                         if (evt.getClickCount() == 2) { // double-click
                             int row = jTable1.getSelectedRow();
                             if (row >= 0) {
-                                Patient selected = model.getPatient(row);
+                                Patient selected = table.getPatient(row);
                                 openPatientFrame(selected);
                             }
                         }
@@ -68,7 +68,7 @@ public class PatientPanel extends javax.swing.JPanel {
 
     private void openPatientFrame(Patient patient) {
         javax.swing.SwingUtilities.invokeLater(() -> {
-            PatientModifyFrame frame = new PatientModifyFrame(patient);
+            PatientModifyFrame frame = new PatientModifyFrame(this, patient);
             frame.setVisible(true);
         });
     }
@@ -86,11 +86,20 @@ public class PatientPanel extends javax.swing.JPanel {
 
     public void passQueryResults(Patient[] patientlist) {
         if (patientlist == null) {
-            model.setPatients(new ArrayList<>());
+            table.setPatients(new ArrayList<>());
             return;
         }
         List<Patient> list = new ArrayList<>(Arrays.asList(patientlist));
-        model.setPatients(list);
+        table.setPatients(list);
+    }
+
+    
+    public void updatePatient(Patient patient) {
+        table.updatePatient(patient);
+    }
+
+    public void addPatient(Patient patient) {
+        table.addPatient(patient);
     }
 
     public interface PatientSelectionListener {
@@ -174,7 +183,7 @@ public class PatientPanel extends javax.swing.JPanel {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton3ActionPerformed
         javax.swing.SwingUtilities.invokeLater(() -> {
-            PatientCreateFrame frame = new PatientCreateFrame();
+            PatientCreateFrame frame = new PatientCreateFrame(this);
             frame.setVisible(true);
         });
     }// GEN-LAST:event_jButton3ActionPerformed
@@ -197,7 +206,7 @@ public class PatientPanel extends javax.swing.JPanel {
         }
 
         javax.swing.SwingUtilities.invokeLater(() -> {
-            PatientModifyFrame frame = new PatientModifyFrame(patient);
+            PatientModifyFrame frame = new PatientModifyFrame(this, patient);
             frame.setVisible(true);
         });
     }// GEN-LAST:event_jButton2ActionPerformed
@@ -242,7 +251,7 @@ public class PatientPanel extends javax.swing.JPanel {
                     return;
                 }
 
-                model.deletePatient(patient);
+                table.deletePatient(patient);
                 patient = null;
 
             } catch (Exception e) {

@@ -19,7 +19,7 @@ import com.group_13.model.Result;
  */
 public class RecordPanel extends javax.swing.JPanel {
 
-    private RecordTable model = new RecordTable(); // This contains the table data
+    private RecordTable table = new RecordTable(); // This contains the table data
     private Patient patient; // Store selected patient
     private Record record; // Store selected record
 
@@ -37,14 +37,14 @@ public class RecordPanel extends javax.swing.JPanel {
      */
     private RecordPanel() {
         initComponents();
-        jTable1.setModel(model);
+        jTable1.setModel(table);
 
         jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 2 && jTable1.getSelectedRow() != -1) {
                     int row = jTable1.getSelectedRow();
-                    record = model.getRecord(row);
+                    record = table.getRecord(row);
                     openRecordModifyFrame(record, patient);
                 }
             }
@@ -55,7 +55,7 @@ public class RecordPanel extends javax.swing.JPanel {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 1 && jTable1.getSelectedRow() != -1) {
                     int row = jTable1.getSelectedRow();
-                    record = model.getRecord(row);
+                    record = table.getRecord(row);
                 }
             }
         });
@@ -66,7 +66,7 @@ public class RecordPanel extends javax.swing.JPanel {
         try {
             Result<Record[]> result = RecordService.getInstance().getRecordsByPatientId(patient);
             if (result.isSuccess()) {
-                model.setRecords(Arrays.asList(result.getData()));
+                table.setRecords(Arrays.asList(result.getData()));
                 System.out.println("Successfully fetched " + result.getData().length + " records for patient: " + patient.getFName() + " " + patient.getLName() + ", ID: " + patient.getId());
             } else {
                 System.out.println("Error fetching records for patient");
@@ -78,9 +78,17 @@ public class RecordPanel extends javax.swing.JPanel {
 
     private void openRecordModifyFrame(Record record, Patient patient) {
         javax.swing.SwingUtilities.invokeLater(() -> {
-            RecordModifyFrame frame = new RecordModifyFrame(record, patient);
+            RecordModifyFrame frame = new RecordModifyFrame(this, record, patient);
             frame.setVisible(true);
         });
+    }
+
+    public void updateRecord(Record record) {
+        table.updateRecord(record);
+    }
+
+    public void addRecord(Record record) {
+        table.addRecord(record);
     }
 
     public void clearSelection() {
@@ -89,11 +97,11 @@ public class RecordPanel extends javax.swing.JPanel {
 
     public void passQueryResults(Record[] recordlist) {
         if (recordlist == null) {
-            model.setRecords(Collections.emptyList());
+            table.setRecords(Collections.emptyList());
             return;
         }
         List<Record> list = Arrays.asList(recordlist);
-        model.setRecords(list);
+        table.setRecords(list);
     }
 
     /**
@@ -181,7 +189,7 @@ public class RecordPanel extends javax.swing.JPanel {
         }
 
         javax.swing.SwingUtilities.invokeLater(() -> {
-            RecordCreateFrame frame = new RecordCreateFrame(patient);
+            RecordCreateFrame frame = new RecordCreateFrame(this, patient);
             frame.setVisible(true);
         });
     }// GEN-LAST:event_jButton3ActionPerformed
@@ -204,7 +212,7 @@ public class RecordPanel extends javax.swing.JPanel {
         }
 
         javax.swing.SwingUtilities.invokeLater(() -> {
-            RecordModifyFrame frame = new RecordModifyFrame(record, patient);
+            RecordModifyFrame frame = new RecordModifyFrame(this, record, patient);
             frame.setVisible(true);
         });
     }// GEN-LAST:event_jButton2ActionPerformed
@@ -230,7 +238,7 @@ public class RecordPanel extends javax.swing.JPanel {
             try {
                 Result<Void> result = RecordService.getInstance().deleteRecord(record);
                 if (result.isSuccess()) {
-                    model.deleteRecord(record);
+                    table.deleteRecord(record);
                     clearSelection();
                     JOptionPane.showMessageDialog(this,
                             "Record deleted successfully.",

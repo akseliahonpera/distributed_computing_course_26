@@ -18,11 +18,13 @@ import com.group_13.model.Result;
 public class PatientCreateFrame extends javax.swing.JFrame {
     
         private Patient patient;
+        private PatientPanel panel;
 
     /**
      * Creates new form PatientCreateFrame
      */
-    public PatientCreateFrame() {
+    public PatientCreateFrame(PatientPanel panel) {
+        this.panel = panel;
         initComponents();
         setTitle("Create new patient");
         setLocationRelativeTo(null);
@@ -94,8 +96,7 @@ public class PatientCreateFrame extends javax.swing.JFrame {
         try {
             Result<Void> result = PatientService.getInstance().createPatient(patient);
             if (result.isSuccess()) {
-                // TODO PatientTablen voisi päivittää näyttämään uuden patientin ilman että koko listaa haetaan uudestaan
-                // recordTable.addRecord(record); tän tyyppisesti
+                panel.addPatient(patient);     // Refresh patient data in PatientPanel
                 JOptionPane.showMessageDialog(this, "Patient created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
             } else {

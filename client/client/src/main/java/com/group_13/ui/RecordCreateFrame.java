@@ -20,12 +20,14 @@ public class RecordCreateFrame extends javax.swing.JFrame {
     
     private final Patient patient;
     private Record record;
+    private RecordPanel panel;
 
     /**
      * Creates new form RecordCreateFrame
      * @param patient
      */
-    public RecordCreateFrame(Patient patient) {
+    public RecordCreateFrame(RecordPanel panel, Patient patient) {
+        this.panel = panel;
         this.patient = patient;
         initComponents();
        setTitle("Create new record");
@@ -90,8 +92,7 @@ public class RecordCreateFrame extends javax.swing.JFrame {
         try {
             Result<Void> result = RecordService.getInstance().createRecord(record);
             if (result.isSuccess()) {
-                // TODO RecordTablen voisi päivittää näyttämään uuden recordin ilman että koko listaa haetaan uudestaan
-                // recordTable.addRecord(record); tän tyyppisesti
+                panel.addRecord(record);     // Refresh record data in RecordPanel
                 JOptionPane.showMessageDialog(this, "Record created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
             } else {
@@ -100,8 +101,6 @@ public class RecordCreateFrame extends javax.swing.JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Exception occurred while creating record: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-        
-        dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed

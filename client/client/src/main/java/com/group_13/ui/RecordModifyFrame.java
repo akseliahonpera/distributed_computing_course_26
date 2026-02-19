@@ -20,8 +20,10 @@ public class RecordModifyFrame extends javax.swing.JFrame {
 
     private Record record;
     private Patient patient;
+    private RecordPanel panel;
 
-    public RecordModifyFrame(Record record, Patient patient) {
+    public RecordModifyFrame(RecordPanel panel, Record record, Patient patient) {
+        this.panel = panel;
         this.record = record;
         this.patient = patient;
         initComponents();
@@ -114,9 +116,7 @@ public class RecordModifyFrame extends javax.swing.JFrame {
         recordDataPanel1.updateRecordData(record, patient);
         Result<Void> result = RecordService.getInstance().updateRecord(record);
         if (result.isSuccess()) {
-            // TODO RecordTablen voisi päivittää näyttämään uuden recordin ilman että koko
-            // listaa haetaan uudestaan
-            // recordTable.updateRecord(record); tän tyyppisesti
+            panel.updateRecord(record);     // Refresh record data in RecordPanel
             JOptionPane.showMessageDialog(this, "Record updated successfully!", "Success",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
