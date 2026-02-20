@@ -26,14 +26,14 @@ public class RequestHandler implements HttpHandler
     {
         System.out.println("Forwarding " + method + " request for table " + table);
 
-        String fullUrl = "http://" + node.getAddress() + "/api/" + table + "?" + ServerUtility.encodeParams(query);
+        String fullUrl = "http://" + node.getAddress() + "/api/" + table + (query.isEmpty() ? "" : "?" + ServerUtility.encodeParams(query));
 
         HttpRequest request;
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(fullUrl))
                 .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr());
 
-        if (method.equalsIgnoreCase("INSERT")) {
+        if (method.equalsIgnoreCase("POST")) {
             request = builder.POST(HttpRequest.BodyPublishers.ofString(bodyText)).build();
         } else if (method.equalsIgnoreCase("UPDATE")) {
             request = builder.PUT(HttpRequest.BodyPublishers.ofString(bodyText)).build();
