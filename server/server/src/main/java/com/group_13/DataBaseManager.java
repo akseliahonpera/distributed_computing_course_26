@@ -17,14 +17,11 @@ public class DataBaseManager
         patientsTable.addColumn("dateofbirth",       "date DEFAULT NULL");
         patientsTable.addColumn("address",           "VARCHAR(150)");
         patientsTable.addColumn("phone",             "VARCHAR(150)");
-        patientsTable.addColumn("emergency_contact", "VARCHAR(150)");
+        patientsTable.addColumn("emergencycontact",  "VARCHAR(150)");
         patientsTable.addColumn("homehospital",      "VARCHAR(150)");
         
         return patientsTable;
     }
-
-
-
 
     private static DataBaseTable getRecordsTableDefinition()
     {
