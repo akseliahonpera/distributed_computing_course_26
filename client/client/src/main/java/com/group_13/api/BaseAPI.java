@@ -13,8 +13,11 @@ import com.group_13.service.AuthService;
  * Contains common configurations BASE_URL and HttpClient instance.
  */
 
+
+
+
 public abstract class BaseAPI {
-    protected static final String BASE_URL = "http://127.0.0.1:8002/api"; // SET URL HERE
+    protected static String BASE_URL = "http://127.0.0.1:8001/api"; // SET URL HERE
     protected static final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
@@ -28,4 +31,9 @@ public abstract class BaseAPI {
     protected void setToken(String token) {
         AuthService.getInstance().setToken(token);
     }
+
+    public static void setBaseURL(String url) {
+        BaseAPI.BASE_URL = url;
+    }
+
 }

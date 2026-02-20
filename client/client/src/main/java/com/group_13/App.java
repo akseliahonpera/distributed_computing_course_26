@@ -1,7 +1,11 @@
 package com.group_13;
 
+
 import javax.swing.SwingUtilities;
+
+import com.group_13.api.BaseAPI;
 import com.group_13.ui.LoginFrame;
+import com.group_13.ui.ServerChoser;
 
 public class App 
 {
@@ -12,6 +16,8 @@ public class App
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                ServerChoser.getInstance().askServer();
+                BaseAPI.setBaseURL(ServerChoser.getInstance().getServerAddress() + "api");
                 LoginFrame frame = new LoginFrame();
                 frame.setVisible(true);
             }

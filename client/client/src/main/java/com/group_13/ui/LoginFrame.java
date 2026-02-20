@@ -97,6 +97,7 @@ public class LoginFrame extends javax.swing.JFrame {
                                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                         .addComponent(jTextField1)
                                                         .addComponent(jPasswordField1)))
+                                                
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout
                                                 .createSequentialGroup()
                                                 .addContainerGap()
