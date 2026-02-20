@@ -53,13 +53,14 @@ public class ReplicaSync
     }
 
 
-    static JSONArray queryChanges(String address, long sinceMs) throws Exception {
-        String fullUrl = "http://" + address + "/api/sync?since=" + Long.toString(sinceMs);
+    static JSONArray queryChanges(HospitalNode node, long sinceMs) throws Exception {
+        String fullUrl = "http://" + node.getAddress() + "/api/sync?since=" + Long.toString(sinceMs);
         
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(fullUrl))
+                .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr())
                 .GET()
                 .build();
 
@@ -75,13 +76,14 @@ public class ReplicaSync
         }
     }
 
-    static JSONObject queryRow(String address, String table, long rowId) throws Exception {
-        String fullUrl = "http://" + address + "/api/" + table + "?id=" + Long.toString(rowId);
+    static JSONObject queryRow(HospitalNode node, String table, long rowId) throws Exception {
+        String fullUrl = "http://" + node.getAddress() + "/api/" + table + "?id=" + Long.toString(rowId);
         
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(fullUrl))
+                .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr())
                 .GET()
                 .build();
 
@@ -117,7 +119,7 @@ public class ReplicaSync
             long lastSync = node.getLastSyncTime();
 
             //Lähetään query jolla selviää mitä muutoksia on tapahtunut viime synkkauksen jälkeen
-            JSONArray changes = queryChanges(node.getAddress(), lastSync);
+            JSONArray changes = queryChanges(node, lastSync);
 
             if (changes.length() == 0) {
                 System.out.println("No changes");
@@ -151,7 +153,7 @@ public class ReplicaSync
                     numOfDeletes += 1;
                 } else if (type.equalsIgnoreCase("INSERT")) { //Insertti, lisätään uusi rivi
                     //Haetaan rivi omistajalta
-                    JSONObject row = queryRow(node.getAddress(), table, rowId);
+                    JSONObject row = queryRow(node, table, rowId);
 
                     //On mahdollista että on lisätty rivi, joka on omistajalla jo poistettu
                     //Rivi pitää kuitenkin lisätä ettei SQL auto_increment mee sekasin
@@ -164,7 +166,7 @@ public class ReplicaSync
                     DataBaseQueryHelper.insert(replicaDB, table, row);
                     numOfInserts += 1;
                 } else if (type.equalsIgnoreCase("UPDATE")) {
-                    JSONObject row = queryRow(node.getAddress(), table, rowId);
+                    JSONObject row = queryRow(node, table, rowId);
                     //On mahdollista että päivitys on tehty riviin, joka on jo poistettu
                     //Updatella ei oo väliä (koska meillä ei ole vierasavaimia)
                     if (row.length() > 0) {

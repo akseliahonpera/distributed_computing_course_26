@@ -37,6 +37,14 @@ public class Server {
         HospitalNetwork.getInstance().loadFromFile(confFilePath);
     }
 
+    private static void createRootUserIfNotExists()
+    {
+        if (!UserAuthenticator.getInstance().userExists("root")) {
+            System.out.println("Root user didn't found! Generating new root user");
+            UserAuthenticator.getInstance().addUser("root", "root", 0);
+        }
+    }
+
     public static void main(String[] args) throws IOException, Exception {
 
         String configFile = null;
@@ -74,6 +82,8 @@ public class Server {
         System.out.println(HospitalNetwork.getInstance());
 
         DataBaseManager.getOwnDataBase();
+        createRootUserIfNotExists();
+
         try {
             System.out.println("Server address: " + fullAddress);
             System.out.println(serverName + " started...");
