@@ -26,3 +26,5 @@ replay_pid*
 # (hopefully) exclude target from repo
 /**/target/
 .fake
+
+dependency-reduced-pom.xml

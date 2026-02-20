@@ -54,10 +54,21 @@ public class RecordService {
         return new Result<Record[]>(success, null, "Failed to fetch records. HTTP status code: " + response.getStatusCode());
     }
 
+    public Result<Record[]> getRecord(Record record) throws Exception {
+        boolean success = false;
+        ApiResponse response = recordAPI.getRecord(record);
+        if (response.getStatusCode() == 200) {
+            success = true;
+            Record[] records = objectMapper.readValue(response.getBody(), Record[].class);
+            return new Result<Record[]>(success, records, "Succesfully fetched records");
+        }
+        return new Result<Record[]>(success, null, "Failed to fetch records. HTTP status code: " + response.getStatusCode());
+    }
+
     public Result<Void> createRecord(Record record) throws Exception {
         boolean success = false;
         ApiResponse response = recordAPI.createRecord(record);
-        if (response.getStatusCode() == 201) {
+        if (response.getStatusCode() == 200) {
             success = true;
             return new Result<Void>(success, null, "Succesfully created record");
         }

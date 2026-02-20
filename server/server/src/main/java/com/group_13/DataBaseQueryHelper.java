@@ -41,10 +41,8 @@ class DataBaseQueryHelper
         ArrayList<String> values = new ArrayList<>();
         boolean first = true;
         for (String key : params.keySet()) {
-            if (!validColumns.contains(key)) {
-                continue;
-            }
-            if (params.get(key).length() == 0) {
+            if (!validColumns.contains(key) ||
+                params.get(key).length() == 0) {
                 continue;
             }
             if (!first) {
@@ -99,19 +97,20 @@ class DataBaseQueryHelper
     }
     /*https://stackoverflow.com/questions/5902310/how-do-i-validate-a-timestamp
     
-    Check if inoutstring is somewhat correct for timestamp for mysql80*/
+    Check if inoutstring is somewhat correct for timestamp for mysql80
+    
+    THIS SHOULD BE IMPLEMENTED IN FRONTEND!!! SUAATANA
+    */
     public static boolean isTimeStampValid(String inputString)
-{ 
-    SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
-    try{
-       format.parse(inputString);
-       return true;
+    { 
+        SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        try {
+            format.parse(inputString);
+            return true;
+        } catch(ParseException e) {
+            return false;
+        }
     }
-    catch(ParseException e)
-    {
-        return false;
-    }
-}
 
     static long insert(DataBase db, String tableName, JSONObject object) throws SQLException, Exception
     {
@@ -125,16 +124,17 @@ class DataBaseQueryHelper
 
             boolean first = true;
             for (String key : object.keySet()) {
-                if (!validColumns.contains(key)) {
+                if (!validColumns.contains(key) ||
+                    key.equalsIgnoreCase("id") || 
+                    object.getString(key).length() == 0) {
                     continue;
                 }
-                if (key.equalsIgnoreCase("id")) {
-                    continue;
-                }
-                /* Check if dateofbirth is in correct timeformat and skip dob if not */
+                /* Check if dateofbirth is in correct timeformat and skip dob if not 
+                THIS SHOULD BE IMPLEMENTED IN FRONTEND!!! SEMMILÄ!!!!
+                */
                 if (key.equalsIgnoreCase("dateofbirth")) {
                     String tempTime = object.getString(key);
-                    if (!isTimeStampValid(tempTime)){
+                    if (!isTimeStampValid(tempTime)) {
                         continue;
                     }
                 }
@@ -196,10 +196,9 @@ class DataBaseQueryHelper
 
             boolean first = true;
             for (String key : object.keySet()) {
-                if (!validColumns.contains(key)) {
-                    continue;
-                }
-                if (key.equalsIgnoreCase("id")) {
+                if (!validColumns.contains(key) ||
+                    key.equalsIgnoreCase("id") || 
+                    object.getString(key).length() == 0) {
                     continue;
                 }
                 if (first) {
@@ -269,6 +268,33 @@ class DataBaseQueryHelper
                 stmt.execute();
             }
         }
+    }
+
+    static JSONArray getChangesSince(DataBase db, long epochTimeMs) throws Exception
+    {
+        JSONArray jsonArray = new JSONArray();
+
+        try (Connection conn = db.getConnection()) {
+            String query = "SELECT * FROM changelog WHERE timestamp > ?";
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setLong(1, epochTimeMs);
+
+                ResultSet rs = stmt.executeQuery();
+
+                ResultSetMetaData meta = rs.getMetaData();
+                int columnCount = meta.getColumnCount();
+                while (rs.next()) {
+                    JSONObject obj = new JSONObject();
+                    
+                    for (int i = 1; i <= columnCount; i++) {
+                        obj.put(meta.getColumnLabel(i), rs.getObject(i));
+                    }
+                    jsonArray.put(obj);
+                }
+            }
+        }
+        return jsonArray;
     }
 
 }

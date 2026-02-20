@@ -10,30 +10,41 @@ import com.group_13.model.Patient;
 import com.group_13.model.RecordTable;
 import javax.swing.JOptionPane;
 
+import com.group_13.service.RecordService;
+import com.group_13.model.Result;
+
 /**
  *
  * @author JONIK
  */
 public class RecordPanel extends javax.swing.JPanel {
-    
-    private RecordTable model = new RecordTable(); // This contains the table data
-    private Patient patient;  // Store selected patient
-    private Record record;  // Store selected record
+
+    private RecordTable table = new RecordTable(); // This contains the table data
+    private Patient patient; // Store selected patient
+    private Record record; // Store selected record
+
+    private static RecordPanel INSTANCE;
+
+    public static synchronized RecordPanel getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new RecordPanel();
+        }
+        return INSTANCE;
+    }
 
     /**
      * Creates new form RecordPanel
      */
-    public RecordPanel() {
+    private RecordPanel() {
         initComponents();
-        jTable1.setModel(model);
-        loadTestData();
+        jTable1.setModel(table);
 
         jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 2 && jTable1.getSelectedRow() != -1) {
                     int row = jTable1.getSelectedRow();
-                    record = model.getRecord(row);
+                    record = table.getRecord(row);
                     openRecordModifyFrame(record, patient);
                 }
             }
@@ -44,77 +55,53 @@ public class RecordPanel extends javax.swing.JPanel {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 1 && jTable1.getSelectedRow() != -1) {
                     int row = jTable1.getSelectedRow();
-                    record = model.getRecord(row);
+                    record = table.getRecord(row);
                 }
             }
         });
     }
 
     public void showRecordsForPatient(Patient patient) {
-        model.showRecordsForPatient(patient.getId());
         this.patient = patient;
-        // TODO: call getRecordsByPatientId from RecordService OR do it in recordTable
+        try {
+            Result<Record[]> result = RecordService.getInstance().getRecordsByPatientId(patient);
+            if (result.isSuccess()) {
+                table.setRecords(Arrays.asList(result.getData()));
+                System.out.println("Successfully fetched " + result.getData().length + " records for patient: " + patient.getFName() + " " + patient.getLName() + ", ID: " + patient.getId());
+            } else {
+                System.out.println("Error fetching records for patient");
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching records for patient: " + e.getMessage());
+        }
     }
 
     private void openRecordModifyFrame(Record record, Patient patient) {
         javax.swing.SwingUtilities.invokeLater(() -> {
-            RecordModifyFrame frame = new RecordModifyFrame(record, patient);
+            RecordModifyFrame frame = new RecordModifyFrame(this, record, patient);
             frame.setVisible(true);
         });
     }
 
-    private void loadTestData() {
-
-        List<Record> list = new ArrayList<>();
-
-        Record r1 = new Record();
-        r1.setId("1");
-        r1.setPatientid("1");
-        r1.setDatetime("12/12/2022");
-        r1.setResponsible("Pentti Pasanen");
-
-        Record r6 = new Record();
-        r6.setId("6");
-        r6.setPatientid("1");
-        r6.setDatetime("28/8/2021");
-        r6.setResponsible("Pentti Pasanen");
-
-        Record r2 = new Record();
-        r2.setPatientid("2");
-        r2.setId("2");
-        r2.setDatetime("1/1/2020");
-        r2.setResponsible("Alli Asikainen");
-
-        Record r3 = new Record();
-        r3.setPatientid("3");
-        r3.setId("3");
-        r3.setDatetime("12/10/2011");
-        r3.setResponsible("Olli Ollikainen");
-
-        Record r4 = new Record();
-        r4.setPatientid("3");
-        r4.setId("4");
-        r4.setDatetime("1/11/2011");
-        r4.setResponsible("Janus Jansson");
-
-        Record r5 = new Record();
-        r5.setPatientid("3");
-        r5.setId("5");
-        r5.setDatetime("5/2/2001");
-        r5.setResponsible("Kiira Kallio");
-
-        list.add(r1);
-        list.add(r2);
-        list.add(r3);
-        list.add(r4);
-        list.add(r5);
-        list.add(r6);
-
-        model.setRecords(list);
+    public void updateRecord(Record record) {
+        table.updateRecord(record);
     }
-    
-    public void clearSelection(){
+
+    public void addRecord(Record record) {
+        table.addRecord(record);
+    }
+
+    public void clearSelection() {
         this.record = null;
+    }
+
+    public void passQueryResults(Record[] recordlist) {
+        if (recordlist == null) {
+            table.setRecords(Collections.emptyList());
+            return;
+        }
+        List<Record> list = Arrays.asList(recordlist);
+        table.setRecords(list);
     }
 
     /**
@@ -123,7 +110,8 @@ public class RecordPanel extends javax.swing.JPanel {
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -134,16 +122,15 @@ public class RecordPanel extends javax.swing.JPanel {
         jButton2 = new javax.swing.JButton();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
+                new Object[][] {
+                        { null, null, null, null },
+                        { null, null, null, null },
+                        { null, null, null, null },
+                        { null, null, null, null }
+                },
+                new String[] {
+                        "Title 1", "Title 2", "Title 3", "Title 4"
+                }));
         jScrollPane1.setViewportView(jTable1);
 
         jButton3.setText("Create new record");
@@ -161,37 +148,37 @@ public class RecordPanel extends javax.swing.JPanel {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 627, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton4)))
-                .addContainerGap())
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 627,
+                                                Short.MAX_VALUE)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jButton1)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(jButton2)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jButton3)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jButton4)))
+                                .addContainerGap()));
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton3)
-                    .addComponent(jButton4)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addContainerGap())
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jButton3)
+                                        .addComponent(jButton4)
+                                        .addComponent(jButton1)
+                                        .addComponent(jButton2))
+                                .addContainerGap()));
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton3ActionPerformed
         if (patient == null) {
             // no patient selected
             JOptionPane.showMessageDialog(this,
@@ -202,19 +189,19 @@ public class RecordPanel extends javax.swing.JPanel {
         }
 
         javax.swing.SwingUtilities.invokeLater(() -> {
-            RecordCreateFrame frame = new RecordCreateFrame(patient);
+            RecordCreateFrame frame = new RecordCreateFrame(this, patient);
             frame.setVisible(true);
         });
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }// GEN-LAST:event_jButton3ActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
         javax.swing.SwingUtilities.invokeLater(() -> {
             RecordSearchFrame frame = new RecordSearchFrame(patient);
             frame.setVisible(true);
         });
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }// GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton2ActionPerformed
         if (record == null) {
             // no record selected
             JOptionPane.showMessageDialog(this,
@@ -225,12 +212,12 @@ public class RecordPanel extends javax.swing.JPanel {
         }
 
         javax.swing.SwingUtilities.invokeLater(() -> {
-            RecordModifyFrame frame = new RecordModifyFrame(record, patient);
+            RecordModifyFrame frame = new RecordModifyFrame(this, record, patient);
             frame.setVisible(true);
         });
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }// GEN-LAST:event_jButton2ActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton4ActionPerformed
         if (record == null) {
             // No patient selected
             JOptionPane.showMessageDialog(this,
@@ -245,20 +232,32 @@ public class RecordPanel extends javax.swing.JPanel {
                 "Are you sure you want to delete record of " + patient.getFName() + " " + patient.getLName() + "?",
                 "Confirm Deletion",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+                JOptionPane.WARNING_MESSAGE);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // TODO call deleteRecord from recordService
-            model.deleteRecord(record);
-            clearSelection();
-            JOptionPane.showMessageDialog(this,
-                    "Record deleted successfully.",
-                    "Deleted",
-                    JOptionPane.INFORMATION_MESSAGE);
+            try {
+                Result<Void> result = RecordService.getInstance().deleteRecord(record);
+                if (result.isSuccess()) {
+                    table.deleteRecord(record);
+                    clearSelection();
+                    JOptionPane.showMessageDialog(this,
+                            "Record deleted successfully.",
+                            "Deleted",
+                        JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to delete record",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error deleting record: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
-    }//GEN-LAST:event_jButton4ActionPerformed
-
+    }// GEN-LAST:event_jButton4ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
