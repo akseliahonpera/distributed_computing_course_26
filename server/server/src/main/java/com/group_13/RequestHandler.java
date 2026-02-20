@@ -167,7 +167,6 @@ public class RequestHandler implements HttpHandler
                 return;
             }
 
-            //DISABLED FOR TESTING PURPOSES!!!
             String token = ServerUtility.extractBearerToken(t);
             if (token == null || !TokenValidator.getInstance().isValidTokenStr(token)) {
                 ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
@@ -177,7 +176,6 @@ public class RequestHandler implements HttpHandler
                 }
                 return;
             }
-            // ENABLED
 
             String table;
             switch (uri.getPath()) {
