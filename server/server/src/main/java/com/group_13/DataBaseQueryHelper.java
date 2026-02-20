@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.json.JSONArray;
@@ -74,6 +75,14 @@ class DataBaseQueryHelper
         return stmt;
     }
 
+    static JSONArray queryWithRowId(DataBase db, String tableName, long rowId) throws SQLException, Exception
+    {
+        TreeMap<String,String> params = new TreeMap<>();
+
+        params.put("id", Long.toString(rowId));
+
+        return query(db, tableName, params);
+    }
 
     static JSONArray query(DataBase db, String tableName, Map<String,String> params) throws SQLException, Exception
     {
@@ -126,7 +135,7 @@ class DataBaseQueryHelper
             for (String key : object.keySet()) {
                 if (!validColumns.contains(key) ||
                     key.equalsIgnoreCase("id") || 
-                    object.getString(key).length() == 0) {
+                    (object.get(key) instanceof String && object.getString(key).length() == 0)) {
                     continue;
                 }
                 /* Check if dateofbirth is in correct timeformat and skip dob if not 
@@ -198,7 +207,7 @@ class DataBaseQueryHelper
             for (String key : object.keySet()) {
                 if (!validColumns.contains(key) ||
                     key.equalsIgnoreCase("id") || 
-                    object.getString(key).length() == 0) {
+                    (object.get(key) instanceof String && object.getString(key).length() == 0)) {
                     continue;
                 }
                 if (first) {

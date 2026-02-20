@@ -113,7 +113,6 @@ public class PatientAPI extends BaseAPI {
     private String patientToQueryString(Patient patient) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
 
-
         System.out.println("paskanvittu"+patient.toString());
 
         if (patient.getId() != null && !patient.getId().isBlank()){

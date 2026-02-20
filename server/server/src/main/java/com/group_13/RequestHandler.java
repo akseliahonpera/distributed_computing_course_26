@@ -73,7 +73,9 @@ public class RequestHandler implements HttpHandler
 
         storeDataBaseChange(table, "INSERT", newRowId);
 
-        ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
+        JSONArray newRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, newRowId);
+
+        ServerUtility.sendResponse(t, newRowJson.toString(), ServerUtility.HttpStatus.OK);
     }
 
     public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
@@ -124,7 +126,9 @@ public class RequestHandler implements HttpHandler
 
         storeDataBaseChange(table, "UPDATE", id);
 
-        ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
+        JSONArray newRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, id);
+
+        ServerUtility.sendResponse(t, newRowJson.toString(), ServerUtility.HttpStatus.OK);
     }
 
 

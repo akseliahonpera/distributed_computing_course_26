@@ -49,12 +49,11 @@ public class AuthService {
             if (response.getStatusCode() == 200) {
                 JSONObject obj = new JSONObject(response.getBody());
                 String token = obj.getString("token");
-                String expiration = obj.getString("expiration");
+                long expiration = obj.getLong("expiration");
                 setToken(token);
-                setExpiration(Long.parseLong(expiration) * 1000L); // Convert to milliseconds for comparison
+                setExpiration(expiration * 1000L); // Convert to milliseconds for comparison
                 success = true;
                 return new Result<Void>(success, null, "Login successful");
-
             }
         } catch (Exception e) {
             e.printStackTrace();
