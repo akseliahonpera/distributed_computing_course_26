@@ -77,16 +77,20 @@ public class ServerUtility {
         return params;
     }
 
-    static void sendResponse(HttpExchange t, String text, HttpStatus status) throws UnsupportedEncodingException, IOException
+    static void sendResponse(HttpExchange t, String text, int statusCode) throws UnsupportedEncodingException, IOException
     {
         byte [] rawData = text.getBytes("UTF-8");
 
         try (OutputStream stream = t.getResponseBody()) {
-            t.sendResponseHeaders(status.code, rawData.length);
+            t.sendResponseHeaders(statusCode, rawData.length);
             stream.write(rawData);
-            
             stream.flush();
         }
+    }
+
+    static void sendResponse(HttpExchange t, String text, HttpStatus status) throws UnsupportedEncodingException, IOException
+    {
+        sendResponse(t, text, status.code);
     }
 
     static String GetBodyText(HttpExchange t)  throws IOException
