@@ -143,8 +143,8 @@ public class RequestHandler implements HttpHandler
             Token token = TokenValidator.getInstance().newToken();
 
             JSONObject responseJSON = new JSONObject();
-            responseJSON.append("token", token.getTokenStr());
-            responseJSON.append("expiration", token.getExpirationTime());
+            responseJSON.put("token", token.getTokenStr());
+            responseJSON.put("expiration", token.getExpirationTime());
 
             ServerUtility.sendResponse(t, responseJSON.toString(), ServerUtility.HttpStatus.OK);
         } else {
@@ -168,8 +168,7 @@ public class RequestHandler implements HttpHandler
             }
 
             //DISABLED FOR TESTING PURPOSES!!!
-
-            /*String token = ServerUtility.extractBearerToken(t);
+            String token = ServerUtility.extractBearerToken(t);
             if (token == null || !TokenValidator.getInstance().isValidTokenStr(token)) {
                 ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
                 System.out.println("Unauthorized. No valid token!");
@@ -177,7 +176,8 @@ public class RequestHandler implements HttpHandler
                     System.out.println("Token: " + token);
                 }
                 return;
-            }*/
+            }
+            // ENABLED
 
             String table;
             switch (uri.getPath()) {

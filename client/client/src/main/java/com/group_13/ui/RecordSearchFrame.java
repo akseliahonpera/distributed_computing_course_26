@@ -26,6 +26,8 @@ public class RecordSearchFrame extends javax.swing.JFrame {
     public RecordSearchFrame(Patient patient) {
         initComponents();
         this.patient = patient;
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     /**

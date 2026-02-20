@@ -1,9 +1,7 @@
 package com.group_13;
 
-public class HospitalNode
-{
-    public HospitalNode(int id, String name, String address, boolean isReplica, long lastSyncTime)
-    {
+public class HospitalNode {
+    public HospitalNode(int id, String name, String address, boolean isReplica, long lastSyncTime) {
         this.id = id;
         this.name = name;
         this.address = address;
@@ -42,8 +40,7 @@ public class HospitalNode
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(id);
         sb.append(',');
@@ -57,15 +54,15 @@ public class HospitalNode
         return sb.toString();
     }
 
-    public static HospitalNode fromString(String str)
-    {
+    public static HospitalNode fromString(String str) {
         try {
             String parts[] = str.split(",");
-            return new HospitalNode(Integer.parseInt(parts[0]), 
-                                    parts[1], 
-                                    parts[2], 
-                                    parts[3].strip().equalsIgnoreCase("true"), 
-                                    Long.parseLong(parts[4]));
+            System.out.println("Parsing HospitalNode from string: " + str);
+            return new HospitalNode(Integer.parseInt(parts[0]),
+                    parts[1],
+                    parts[2],
+                    parts[3].strip().equalsIgnoreCase("true"),
+                    Long.parseLong(parts[4].trim()));
 
         } catch (NumberFormatException e) {
             return null;

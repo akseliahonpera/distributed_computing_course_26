@@ -1,5 +1,6 @@
 package com.group_13.api;
 
+import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class AuthAPI extends BaseAPI {
     public ApiResponse login(String username, String password) throws Exception {
         
         Map<String, String> body = new HashMap<>();
-        body.put("username", username);
+        body.put("user", username);
         body.put("password", password);
 
         String jsonBody = objectMapper.writeValueAsString(body);
@@ -39,7 +40,11 @@ public class AuthAPI extends BaseAPI {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
+        System.out.println("Sending login request with body: " + jsonBody);
+        System.out.println("Request URI: " + request.uri());
+
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Received json response: " + response.body());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
