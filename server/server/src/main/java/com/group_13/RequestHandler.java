@@ -3,6 +3,9 @@ package com.group_13;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Map;
@@ -19,12 +22,36 @@ public class RequestHandler implements HttpHandler
 
     }
 
-    private void forwardRequest(HospitalNode node, HttpExchange t, Map<String, String> query, String table, String method)
+    private void forwardRequest(HospitalNode node, HttpExchange t, String bodyText, Map<String, String> query, String table, String method) throws Exception
     {
-        //TODO. Implement request forwarding
-        //All writes (DELETE, UPDATE, INSERT) needs to go through owner
-        //Requests could use same API for simplicity
         System.out.println("Forwarding " + method + " request for table " + table);
+
+        String fullUrl = "http://" + node.getAddress() + "/api/" + table + "?" + ServerUtility.encodeParams(query);
+
+        HttpRequest request;
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(fullUrl))
+                .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr());
+
+        if (method.equalsIgnoreCase("INSERT")) {
+            request = builder.POST(HttpRequest.BodyPublishers.ofString(bodyText)).build();
+        } else if (method.equalsIgnoreCase("UPDATE")) {
+            request = builder.PUT(HttpRequest.BodyPublishers.ofString(bodyText)).build();
+        } else if (method.equalsIgnoreCase("DELETE")) {
+            request = builder.DELETE().build();
+        } else {
+            ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.INTERNAL_SERVER_ERROR);
+            return;
+        }
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpResponse<String> response = client.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
+
+        ServerUtility.sendResponse(t, response.body(), response.statusCode());
     }
 
     private void storeDataBaseChange(String table, String type, long rowId) throws Exception
@@ -64,7 +91,7 @@ public class RequestHandler implements HttpHandler
         if (object.has("patientid")) {
             long id = object.getLong("patientid");
             if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
-                forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "POST");
+                forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, bodyText, query, table, "POST");
                 return;
             }
         }
@@ -73,7 +100,9 @@ public class RequestHandler implements HttpHandler
 
         storeDataBaseChange(table, "INSERT", newRowId);
 
-        ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
+        JSONArray newRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, newRowId);
+
+        ServerUtility.sendResponse(t, newRowJson.toString(), ServerUtility.HttpStatus.OK);
     }
 
     public void handleGetRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
@@ -97,7 +126,7 @@ public class RequestHandler implements HttpHandler
         long id = Long.parseLong(query.get("id"));
 
         if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
-            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "DELETE");
+            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, null, query, table, "DELETE");
             return;
         }
 
@@ -111,12 +140,13 @@ public class RequestHandler implements HttpHandler
     public void handleUpdateRequest(HttpExchange t, Map<String, String> query, String table) throws Exception
     {
         System.out.println("Handling UPDATE request for table " + table + " with query: " + query);
-        JSONObject object = new JSONObject(ServerUtility.GetBodyText(t));
+        String bodyText = ServerUtility.GetBodyText(t);
+        JSONObject object = new JSONObject(bodyText);
 
         long id = Long.parseLong(query.get("id"));
 
         if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
-            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, query, table, "UPDATE");
+            forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, bodyText, query, table, "UPDATE");
             return;
         }
 
@@ -124,7 +154,9 @@ public class RequestHandler implements HttpHandler
 
         storeDataBaseChange(table, "UPDATE", id);
 
-        ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
+        JSONArray newRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, id);
+
+        ServerUtility.sendResponse(t, newRowJson.toString(), ServerUtility.HttpStatus.OK);
     }
 
 
