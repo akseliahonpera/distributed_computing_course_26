@@ -27,6 +27,7 @@ public class PatientModifyFrame extends javax.swing.JFrame {
         public PatientModifyFrame(PatientPanel panel, Patient patient) {
                 super();
                 this.patient = patient;
+                this.panel = panel;
                 initComponents();
                 setTitle("View/Update patient data");
                 setLocationRelativeTo(null);
