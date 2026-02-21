@@ -24,6 +24,9 @@ public class RequestHandler implements HttpHandler
 
     private void forwardRequest(HospitalNode node, HttpExchange t, String bodyText, Map<String, String> query, String table, String method) throws Exception
     {
+        //When API receives database write operation for object it doesn't own, it gets forwarded to owner node
+        //This function works as proxy
+
         System.out.println("Forwarding " + method + " request for table " + table);
 
         String fullUrl = "http://" + node.getAddress() + "/api/" + table + (query.isEmpty() ? "" : "?" + ServerUtility.encodeParams(query));
@@ -33,7 +36,7 @@ public class RequestHandler implements HttpHandler
                 .uri(URI.create(fullUrl))
                 .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr());
 
-        if (method.equalsIgnoreCase("POST")) {
+        if (method.equalsIgnoreCase("INSERT")) {
             request = builder.POST(HttpRequest.BodyPublishers.ofString(bodyText)).build();
         } else if (method.equalsIgnoreCase("UPDATE")) {
             request = builder.PUT(HttpRequest.BodyPublishers.ofString(bodyText)).build();
@@ -54,23 +57,46 @@ public class RequestHandler implements HttpHandler
         ServerUtility.sendResponse(t, response.body(), response.statusCode());
     }
 
-    private void storeDataBaseChange(String table, String type, long rowId) throws Exception
+    private void storeDataBaseChange(String table, String type, long rowId, JSONObject newValues, JSONObject oldValues) throws Exception
     {
         DataBase localDB = DataBaseManager.getOwnDataBase();
         long epochTimeMs = Instant.now().toEpochMilli();
 
-        DataBaseQueryHelper.insertChange(localDB, table, type, rowId, epochTimeMs);
+        JSONObject diff = newValues;
+        if (oldValues != null) {
+            //Change is UPDATE
+            //Lets find what column values have been changed
+            //Only changed values are stored
+            diff = new JSONObject();
+            for (String key : newValues.keySet()) {
+                if (oldValues.has(key) && 
+                    newValues.get(key).toString().equals(oldValues.get(key).toString())) {
+                    continue;
+                }
+                diff.put(key, newValues.get(key));
+            }
+        }
+
+        DataBaseQueryHelper.insertChange(localDB, table, type, rowId, epochTimeMs, diff);
     }
 
     private void handleSyncRequest(HttpExchange t, Map<String, String> query) throws Exception
     {
         DataBase localDB = DataBaseManager.getOwnDataBase();
 
-        long epochTimeMs = Long.parseLong(query.get("since"));
-        
-        JSONArray changes = DataBaseQueryHelper.getChangesSince(localDB, epochTimeMs);
+        if (query.containsKey("logid")) {
+            long logId = Long.parseLong(query.get("logid"));
 
-        ServerUtility.sendResponse(t, changes.toString(), ServerUtility.HttpStatus.OK);
+            JSONObject row = DataBaseQueryHelper.getChanges(localDB, logId);
+
+            ServerUtility.sendResponse(t, row.toString(), ServerUtility.HttpStatus.OK);
+        } else {
+            long epochTimeMs = Long.parseLong(query.get("since"));
+            
+            JSONArray changes = DataBaseQueryHelper.getChangesSince(localDB, epochTimeMs);
+
+            ServerUtility.sendResponse(t, changes.toString(), ServerUtility.HttpStatus.OK);
+        }
     }
 
 
@@ -81,26 +107,23 @@ public class RequestHandler implements HttpHandler
 
         JSONObject object = new JSONObject(bodyText);
 
-        // kommasin tämän pois koska luodut recordit jäi tähän jumiin ja koko paska jääty -Joni
-        // Patienttien kanssa ei ole ongelmaa koska niillä ei ole patientId:tä luotaessa, mutta recordeilla on.
-
-        // unohdin lisätä tarkistuksen kenelle patient kuuluu
-        // Jäätyminen johtu siitä, että jokainen recordi joka sisälti viittauksen patienttiin yritettiin ohjata toiselle sairaalanodelle
-        // ohjausta ei ollut implementoitu -> serveri ei ikinä lähetä http requestin vastausta -> clientti jää odottamaan
-        // -Ara
+        //Records are supposed to owned by same node which owns Patient
         if (object.has("patientid")) {
+            //Check if we own Patient
+            //If we don't, forward request to owner node
             long id = object.getLong("patientid");
             if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
-                forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, bodyText, query, table, "POST");
+                forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, bodyText, query, table, "INSERT");
                 return;
             }
         }
 
         long newRowId = DataBaseQueryHelper.insert(DataBaseManager.getOwnDataBase(), table, object);
 
-        storeDataBaseChange(table, "INSERT", newRowId);
-
         JSONArray newRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, newRowId);
+
+        //Store this insert to changelog
+        storeDataBaseChange(table, "INSERT", newRowId, newRowJson.getJSONObject(0), null);
 
         ServerUtility.sendResponse(t, newRowJson.toString(), ServerUtility.HttpStatus.OK);
     }
@@ -125,6 +148,8 @@ public class RequestHandler implements HttpHandler
         System.out.println("Handling DELETE request for table " + table + " with query: " + query);
         long id = Long.parseLong(query.get("id"));
 
+        //Check if we own object/row which clients want to delete
+        //If we don't, forward request to owner node
         if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
             forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, null, query, table, "DELETE");
             return;
@@ -132,7 +157,8 @@ public class RequestHandler implements HttpHandler
 
         DataBaseQueryHelper.delete(DataBaseManager.getOwnDataBase(), table, id);
 
-        storeDataBaseChange(table, "DELETE", id);
+        //Store this delete operation to changelog
+        storeDataBaseChange(table, "DELETE", id, null, null);
 
         ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
     }
@@ -145,16 +171,22 @@ public class RequestHandler implements HttpHandler
 
         long id = Long.parseLong(query.get("id"));
 
+        //Check if we own object/row which clients want to update
+        //If we don't, forward request to owner node
         if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
             forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, bodyText, query, table, "UPDATE");
             return;
         }
 
+        JSONArray oldRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, id);
+
         DataBaseQueryHelper.update(DataBaseManager.getOwnDataBase(), table, object, id);
 
-        storeDataBaseChange(table, "UPDATE", id);
-
         JSONArray newRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, id);
+
+        //Store this update to changelog
+        //Old row is needed to check which column values gets affected
+        storeDataBaseChange(table, "UPDATE", id, newRowJson.getJSONObject(0), oldRowJson.getJSONObject(0));
 
         ServerUtility.sendResponse(t, newRowJson.toString(), ServerUtility.HttpStatus.OK);
     }
@@ -187,12 +219,10 @@ public class RequestHandler implements HttpHandler
     @Override
     @SuppressWarnings("CallToPrintStackTrace")
     public void handle(HttpExchange t) throws IOException {
-        System.out.println("Handling");
         try 
         {
             URI uri = t.getRequestURI();
             Map<String, String> query = ServerUtility.parseQuery(t);
-            System.out.println(uri.toString());
 
             if (uri.getPath().equals("/api/auth/token")) {
                 HandleAuthRequest(t);
