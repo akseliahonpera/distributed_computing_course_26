@@ -17,7 +17,7 @@ public class App
             @Override
             public void run() {
                 ServerChoser.getInstance().askServer();
-                BaseAPI.setBaseURL(ServerChoser.getInstance().getServerAddress() + "api");
+                BaseAPI.setBaseURL(ServerChoser.getInstance().getServerAddress());
                 LoginFrame frame = new LoginFrame();
                 frame.setVisible(true);
             }

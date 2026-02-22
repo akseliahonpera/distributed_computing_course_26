@@ -26,11 +26,11 @@ import com.group_13.service.AuthService;
 
 
 public abstract class BaseAPI {
-    protected static String BASE_URL = "https://127.0.0.1:8001/api"; // SET URL HERE
+    protected static String BASE_URL = ""; // SET URL HERE
     
 
 
-    HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
+    public static final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
             .sslContext(getSslContext())
             .build();
 
@@ -50,7 +50,7 @@ public abstract class BaseAPI {
     }
 
 
-    private SSLContext getSslContext(){
+    private static SSLContext getSslContext(){
     KeyStore trustStore = null;
     try {
         trustStore = KeyStore.getInstance("PKCS12");
@@ -58,7 +58,7 @@ public abstract class BaseAPI {
         // TODO Auto-generated catch block
         e.printStackTrace();
     }
-        try (FileInputStream in = new FileInputStream("ds26-truststore.p12")) {
+        try (FileInputStream in = new FileInputStream("certs/ds26-truststore.p12")) {
             trustStore.load(in, "Gambiinakiuas522".toCharArray());
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
