@@ -1,7 +1,5 @@
 package com.group_13.api;
 
-import java.util.ArrayList;
-
 public class Host {
     
     final String prefix= "https://"; 

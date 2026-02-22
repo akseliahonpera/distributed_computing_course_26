@@ -28,110 +28,29 @@ public class Server {
 
     public static SSLContext getSSLContext(String nodeKeystoreP12Path,
                                             String truststoreP12Path,
-                                            char[] password){
+                                            char[] password) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException{
 
         // ---- Load node key material (client cert + private key) ----
-        KeyStore keyStore = null;
-        try {
-            keyStore = KeyStore.getInstance("PKCS12");
-        } catch (KeyStoreException e) {
+        KeyStore trustStore = KeyStore.getInstance("PKCS12");
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
-            e.printStackTrace();
-        }
-        try (FileInputStream in = new FileInputStream(nodeKeystoreP12Path)) {
-            try {
-                keyStore.load(in, password);
-            } catch (NoSuchAlgorithmException e) {
-              System.out.println("nosuchfile");
-                e.printStackTrace();
-            } catch (CertificateException e) {
-                System.out.println("certti faili");
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("filua ei löydy");
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        try (FileInputStream keyStoreFile = new FileInputStream(nodeKeystoreP12Path);
+             FileInputStream trustStorefile = new FileInputStream(truststoreP12Path)) {
+            keyStore.load(keyStoreFile, password);
+            trustStore.load(trustStorefile, password);
+        } catch (Exception e) {
+            System.out.println("Cannot read keystores. Check that cert folder is contains correct keystore files!");
+            return null;
         }
 
-        KeyManagerFactory kmf = null;
-        try {
-            kmf = KeyManagerFactory.getInstance(
-                KeyManagerFactory.getDefaultAlgorithm()
-            );
-        } catch (NoSuchAlgorithmException e) {
-            
-            e.printStackTrace();
-        }
-        try {
-            kmf.init(keyStore, password);
-        } catch (UnrecoverableKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
-        // ---- Load trust material (cluster CA) ----
-        KeyStore trustStore = null;
-        try {
-            trustStore = KeyStore.getInstance("PKCS12");
-        } catch (KeyStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try (FileInputStream in = new FileInputStream(truststoreP12Path)) {
-            trustStore.load(in, password);
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        kmf.init(keyStore, password);
+        tmf.init(trustStore);
 
-        TrustManagerFactory tmf = null;
-        try {
-            tmf = TrustManagerFactory.getInstance(
-                TrustManagerFactory.getDefaultAlgorithm()
-            );
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            tmf.init(trustStore);
-        } catch (KeyStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        // ---- Build SSL context for mTLS ----
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContext.getInstance("TLS");
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-        } catch (KeyManagementException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
         return sslContext;
     }
@@ -140,8 +59,8 @@ public class Server {
     private static void createHttpClient(SSLContext sslContext)
     {
         client = HttpClient.newBuilder()
-                .sslContext(sslContext)
-                .build();
+                           .sslContext(sslContext)
+                           .build();
     }
 
     private static void initHospitalNetwork(String confFilePath) throws Exception {
@@ -157,6 +76,8 @@ public class Server {
     }
 
     public static void main(String[] args) throws IOException, Exception {
+
+        System.out.println("Working Directory: " + System.getProperty("user.dir"));
 
         String configFile = null;
         int serverID = (args.length == 0) ? 0 : Integer.parseInt(args[0]);
@@ -217,7 +138,7 @@ public class Server {
 
                     sslparams.setWantClientAuth(true);
 
-                    params.setSSLParameters(sslparams); 
+                    params.setSSLParameters(sslparams);
                 }
             });
 

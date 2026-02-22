@@ -19,7 +19,7 @@ public final class TokenValidator {
         return INSTANCE;
     }
 
-    public Token newToken()
+    public synchronized Token newToken()
     {
         Token newToken = new Token(60*15);
 
@@ -27,7 +27,7 @@ public final class TokenValidator {
 
         return newToken;
     }
-    public boolean isValidTokenStr(String tokenStr)
+    public synchronized boolean isValidTokenStr(String tokenStr)
     {
         if (!tokens.containsKey(tokenStr)) {
             return false;

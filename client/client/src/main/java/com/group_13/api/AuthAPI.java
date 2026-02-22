@@ -1,6 +1,5 @@
 package com.group_13.api;
 
-import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;

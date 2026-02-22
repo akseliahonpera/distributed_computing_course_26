@@ -15,8 +15,6 @@ public class HospitalNode {
     private boolean isReplica;
     private long lastSyncTime;
 
-    private Token authToken = null;
-
     public String getName() {
         return name;
     }
@@ -84,13 +82,5 @@ public class HospitalNode {
 
     public void setLastSyncTime(long lastSyncTime) {
         this.lastSyncTime = lastSyncTime;
-    }
-
-    public Token getAuthToken() {
-        if (authToken == null || authToken.hasExpired()) {
-            System.out.println("auttok_null");
-            authToken = AuthService.getAuthTokenForServer(address);
-        }
-        return authToken;
     }
 }
