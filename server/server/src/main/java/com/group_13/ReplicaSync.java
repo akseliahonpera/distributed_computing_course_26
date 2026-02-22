@@ -1,7 +1,6 @@
 package com.group_13;
 
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -74,17 +73,15 @@ public class ReplicaSync
 
     static JSONArray queryChangesLog(HospitalNode node, long sinceMs) throws Exception {
         //This api call gives "changelog" about database writes (and deletes) since given timestamp
-        String fullUrl = "http://" + node.getAddress() + "/api/sync?since=" + Long.toString(sinceMs);
+        String fullUrl = "https://" + node.getAddress() + "/api/sync?since=" + Long.toString(sinceMs);
         
-        HttpClient client = HttpClient.newHttpClient();
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(fullUrl))
                 .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr())
                 .GET()
                 .build();
 
-        HttpResponse<String> response = client.send(
+        HttpResponse<String> response = Server.client.send(
                 request,
                 HttpResponse.BodyHandlers.ofString()
         );
@@ -98,17 +95,15 @@ public class ReplicaSync
 
     static JSONObject queryChanges(HospitalNode node, long logId) throws Exception {
         //This api call gives column name - value pairs for spesific "changelog" row
-        String fullUrl = "http://" + node.getAddress() + "/api/sync?logid=" + Long.toString(logId);
+        String fullUrl = "https://" + node.getAddress() + "/api/sync?logid=" + Long.toString(logId);
         
-        HttpClient client = HttpClient.newHttpClient();
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(fullUrl))
                 .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr())
                 .GET()
                 .build();
 
-        HttpResponse<String> response = client.send(
+        HttpResponse<String> response = Server.client.send(
                 request,
                 HttpResponse.BodyHandlers.ofString()
         );

@@ -2,7 +2,6 @@ package com.group_13;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
@@ -24,21 +23,18 @@ public class AuthService
     public static Token getAuthTokenForServer(String serverAddress)
     {
         try {
-            String fullUrl = "http://" + serverAddress + "/api/auth/token";
+            String fullUrl = "https://" + serverAddress + "/api/auth/token";
             
             JSONObject obj = new JSONObject();
             obj.put("user", getRootUsername());
             obj.put("password", getRootPassword());
-
-
-            HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(fullUrl))
                     .POST(HttpRequest.BodyPublishers.ofString(obj.toString()))
                     .build();
 
-            HttpResponse<String> response = client.send(
+            HttpResponse<String> response = Server.client.send(
                     request,
                     HttpResponse.BodyHandlers.ofString()
             );
