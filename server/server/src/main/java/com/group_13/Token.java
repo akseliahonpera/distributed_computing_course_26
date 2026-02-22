@@ -10,7 +10,7 @@ public class Token
     private static final SecureRandom secureRandom = new SecureRandom();
     private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder().withoutPadding();
 
-    private final long expires;
+    private long expires;
     private final String str;
 
     public Token(long durationSeconds)
@@ -37,6 +37,11 @@ public class Token
     public long getExpirationTime()
     {
         return expires;
+    }
+
+    public void refresh(long durationSeconds)
+    {
+        expires = epochTime() + durationSeconds;
     }
 
     private long epochTime() 
