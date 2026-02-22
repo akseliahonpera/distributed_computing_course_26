@@ -62,6 +62,18 @@ public class DataBaseManager
         return clTable;
     }
 
+    private static DataBaseTable getChangesTableDefinition()
+    {
+        DataBaseTable clTable = new DataBaseTable("changes");
+
+        clTable.addColumn("id",          "BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT");
+        clTable.addColumn("logid",       "BIGINT");         //This contains which change log row these changes are
+        clTable.addColumn("colname",     "CHAR(32)");       //This contains which columns name of changed value
+        clTable.addColumn("colvalue",    "VARCHAR(400)");   //This contains which new value for change
+
+        return clTable;
+    }
+
     private static String getDataBaseName(HospitalNode node)
     {
         int localNodeId = HospitalNetwork.getInstance().getLocalNode().getId();
@@ -88,7 +100,19 @@ public class DataBaseManager
         db.defineTable(getUsersTableDefinition(), startId);
 
         if (!isReplica) {
+            //Changelog is maintained for syncronization
+            //changelog table contains
+            //  - operation type (INSERT, UPDATE, DELETE)
+            //  - target table name
+            //  - row which was affected on target table
+            //  - timestamp when operation was made
+
+            //changes table contains column name - value pairs for each changelog entry
+            
+            //Other nodes query these table through API
+            //They can replay all changes to syncronize replica database
             db.defineTable(getChangeLogTableDefinition(), 0);
+            db.defineTable(getChangesTableDefinition(), 0);
         }
 
         return db;
@@ -106,9 +130,13 @@ public class DataBaseManager
             String dbPath = "jdbc:mysql://localhost:3306/";
             String dbName = getDataBaseName(node);
             //String dbName = "ds26";
-            String dbUser = "root";
+            String dbUser = "DS26Server";
             String dbPw = "Gambiinakiuas522";
 
+
+            //Owner of objects are encoded to id top bits
+            //This makes all IDs globally unique
+            //And makes possible to determine owner efficiently in API
             long startId = node.getId();
             startId <<= 48;
 

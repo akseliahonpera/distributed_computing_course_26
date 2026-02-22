@@ -189,13 +189,4 @@ public class DataBase {
 
         tableDefinitions.add(table);
     }
-
-    DataBaseTable getDefinition(String tableName) {
-        for (DataBaseTable t : tableDefinitions) {
-            if (t.getName().equalsIgnoreCase(tableName)) {
-                return t;
-            }
-        }
-        return null;
-    }
 }

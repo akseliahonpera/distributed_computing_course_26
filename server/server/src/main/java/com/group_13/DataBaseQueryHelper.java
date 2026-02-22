@@ -263,20 +263,67 @@ class DataBaseQueryHelper
         }
     }
 
-    static void insertChange(DataBase db, String table, String type, long rowId, long epochTimeMs) throws Exception
+    static void insertChange(DataBase db, String table, String type, long rowId, long epochTimeMs, JSONObject changedRow) throws Exception
     {
        try (Connection conn = db.getConnection()) {
             String query = "INSERT INTO changelog (timestamp, tablename, rowid, type) VALUES (?, ?, ?, ?)";
-
-            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            long id = -1;
+            try (PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setLong(1, epochTimeMs);
                 stmt.setString(2, table);
                 stmt.setLong(3, rowId);
                 stmt.setString(4, type);
                 
-                stmt.execute();
+                stmt.executeUpdate();
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    id = rs.getLong(1);
+                }
+            }
+
+            if (changedRow == null || id == -1) {
+                return;
+            } 
+
+            query = "INSERT INTO changes (logid, colname, colvalue) VALUES (?, ?, ?)";
+
+            for (String key : changedRow.keySet()) {
+                if (key.equalsIgnoreCase("id")) {
+                    //Should not be possible
+                    continue;
+                }
+
+                String newValue = changedRow.get(key).toString();
+
+                try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                    stmt.setLong(1, id);
+                    stmt.setString(2, key);
+                    stmt.setString(3, newValue);
+                    stmt.execute();
+                }
             }
         }
+    }
+
+    static JSONObject getChanges(DataBase db, long logId) throws Exception
+    {
+        JSONObject obj = new JSONObject();
+        try (Connection conn = db.getConnection()) {
+            String query = "SELECT colname, colvalue FROM changes WHERE logid = ?";
+
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setLong(1, logId);
+
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    String name = rs.getString(1);
+                    String value = rs.getString(2);
+
+                    obj.put(name, value);
+                }
+            }
+        }
+        return obj;
     }
 
     static JSONArray getChangesSince(DataBase db, long epochTimeMs) throws Exception
