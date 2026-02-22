@@ -46,8 +46,8 @@ public class AuthService
             }
             return null;
         } catch (IOException | InterruptedException | JSONException e) {
-            System.out.println("Failed to get auth token for server " + serverAddress);
-            System.out.println(e.getMessage());
+          //  System.out.println("Failed to get auth token for server " + serverAddress);
+          //  System.out.println(e.getMessage());
         }
         return null;
     }

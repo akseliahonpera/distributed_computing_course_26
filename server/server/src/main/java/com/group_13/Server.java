@@ -5,7 +5,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -23,33 +28,110 @@ public class Server {
 
     public static SSLContext getSSLContext(String nodeKeystoreP12Path,
                                             String truststoreP12Path,
-                                            char[] password) throws Exception {
+                                            char[] password){
 
         // ---- Load node key material (client cert + private key) ----
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        KeyStore keyStore = null;
+        try {
+            keyStore = KeyStore.getInstance("PKCS12");
+        } catch (KeyStoreException e) {
+
+            e.printStackTrace();
+        }
         try (FileInputStream in = new FileInputStream(nodeKeystoreP12Path)) {
-            keyStore.load(in, password);
+            try {
+                keyStore.load(in, password);
+            } catch (NoSuchAlgorithmException e) {
+              System.out.println("nosuchfile");
+                e.printStackTrace();
+            } catch (CertificateException e) {
+                System.out.println("certti faili");
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("filua ei löydy");
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(
-            KeyManagerFactory.getDefaultAlgorithm()
-        );
-        kmf.init(keyStore, password);
+        KeyManagerFactory kmf = null;
+        try {
+            kmf = KeyManagerFactory.getInstance(
+                KeyManagerFactory.getDefaultAlgorithm()
+            );
+        } catch (NoSuchAlgorithmException e) {
+            
+            e.printStackTrace();
+        }
+        try {
+            kmf.init(keyStore, password);
+        } catch (UnrecoverableKeyException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // ---- Load trust material (cluster CA) ----
-        KeyStore trustStore = KeyStore.getInstance("PKCS12");
+        KeyStore trustStore = null;
+        try {
+            trustStore = KeyStore.getInstance("PKCS12");
+        } catch (KeyStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         try (FileInputStream in = new FileInputStream(truststoreP12Path)) {
             trustStore.load(in, password);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(
-            TrustManagerFactory.getDefaultAlgorithm()
-        );
-        tmf.init(trustStore);
+        TrustManagerFactory tmf = null;
+        try {
+            tmf = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm()
+            );
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            tmf.init(trustStore);
+        } catch (KeyStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // ---- Build SSL context for mTLS ----
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        } catch (KeyManagementException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         return sslContext;
     }

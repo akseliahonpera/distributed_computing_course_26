@@ -193,7 +193,7 @@ public class RequestHandler implements HttpHandler
         if (!t.getRequestMethod().equalsIgnoreCase("POST")) {
             ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
         }
-        
+        System.out.println("Autorisaatiokysely!!!!!!!!!!!!!!!");
         String credentialsJSON = ServerUtility.GetBodyText(t);
         JSONObject object = new JSONObject(credentialsJSON);
 
@@ -222,6 +222,7 @@ public class RequestHandler implements HttpHandler
             Map<String, String> query = ServerUtility.parseQuery(t);
 
             if (uri.getPath().equals("/api/auth/token")) {
+                System.out.println("Autorisaatiokysely1!!!!!!!!!!!!!!!");
                 HandleAuthRequest(t);
                 return;
             }

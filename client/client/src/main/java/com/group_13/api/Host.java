@@ -7,7 +7,7 @@ public class Host {
     final String prefix= "https://"; 
     String bigdix = null;
     String smalltits = null;
-    final String midfix = "/api/";
+    final String midfix = "/api";
     String url = null;
 
     String hostNumber = null;//retard alert

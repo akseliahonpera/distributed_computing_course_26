@@ -16,7 +16,7 @@ import com.group_13.model.ApiResponse;
 
 public class AuthAPI extends BaseAPI {
     private static final AuthAPI INSTANCE = new AuthAPI();
-    private static final String AUTH_ENDPOINT = BASE_URL + "auth/token";
+    private static final String AUTH_ENDPOINT = BASE_URL + "/auth/token";
 
     private AuthAPI() {
         super();
