@@ -16,7 +16,7 @@ import com.group_13.model.ApiResponse;
 
 public class AuthAPI extends BaseAPI {
     private static final AuthAPI INSTANCE = new AuthAPI();
-    private static final String AUTH_ENDPOINT = BASE_URL + "/auth/token";
+    private static final String AUTH_ENDPOINT = BASE_URL + "auth/token";
 
     private AuthAPI() {
         super();
@@ -42,7 +42,8 @@ public class AuthAPI extends BaseAPI {
 
         System.out.println("Sending login request with body: " + jsonBody);
         System.out.println("Request URI: " + request.uri());
-
+        System.out.println("kilientti: "+ httpClient.toString());
+        
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println("Received json response: " + response.body());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());

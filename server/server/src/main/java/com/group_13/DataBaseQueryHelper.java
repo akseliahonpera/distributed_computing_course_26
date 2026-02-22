@@ -139,7 +139,7 @@ class DataBaseQueryHelper
                     continue;
                 }
                 /* Check if dateofbirth is in correct timeformat and skip dob if not 
-                THIS SHOULD BE IMPLEMENTED IN FRONTEND!!! SEMMILÄ!!!!
+                THIS SHOULD BE IMPLEMENTED IN FRONTEND!!! SEMMILÄ!!!! Pallit.. :kuolaava_eemee_emoji:
                 */
                 if (key.equalsIgnoreCase("dateofbirth")) {
                     String tempTime = object.getString(key);

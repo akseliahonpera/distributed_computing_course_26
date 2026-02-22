@@ -1,3 +1,4 @@
 0,oulu,DS26oulu:8001,false,0
 1,tampere,DS26tampere:8002,true,0
 2,helsinki,DS26helsinki:8003,true,0
+

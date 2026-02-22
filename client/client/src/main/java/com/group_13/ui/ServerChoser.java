@@ -9,16 +9,23 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+import com.group_13.api.ConfReader;
+import com.group_13.api.Host;
+import com.group_13.api.confReader;
+
 public class ServerChoser extends JDialog {
 
     private static ServerChoser INSTANCE = null;
     private int serverIndex;
+    
+    private ArrayList<Host> hosts=null;
 
     private ServerChoser() {}
 
@@ -34,7 +41,15 @@ public class ServerChoser extends JDialog {
         GridBagLayout gridBagLayout = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         panel.setLayout(gridBagLayout);
-        String[] choices = { "Oulu", "Tampere", "Helsinki" };
+
+        //load hosts from conf
+        getHosts();
+        //Define list size
+        String[] choices = new String[hosts.size()];
+        for(int i = 0; i<hosts.size();i++){
+            choices[i]=hosts.get(i).getHostPlace();
+        }
+
         JComboBox<String> cb = new JComboBox<String>(choices);
         cb.setPreferredSize(new Dimension(100, 25));
         JButton okButton = new JButton();
@@ -82,8 +97,17 @@ public class ServerChoser extends JDialog {
 
     }
 
+
+    private void getHosts(){
+
+        String filepath= "node0_conf.txt";
+
+        ConfReader confs = new ConfReader();
+        this.hosts = confs.loadFromFile(filepath);
+    }
+
     public String getServerAddress() {
-        return String.format("http://127.0.0.1:800%d/", serverIndex + 1);
+        return hosts.get(serverIndex).getUrl();
     }
 
     public static void main(String args[]) {
