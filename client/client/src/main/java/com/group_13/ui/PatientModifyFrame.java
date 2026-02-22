@@ -128,9 +128,9 @@ public class PatientModifyFrame extends javax.swing.JFrame {
 
         private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {// GEN-FIRST:event_jButton1ActionPerformed
                 patientDataPanel1.updatePatientData(patient);
-                Result<Void> result = PatientService.getInstance().updatePatient(patient);
+                Result<Patient[]> result = PatientService.getInstance().updatePatient(patient);
                 if (result.isSuccess()) {
-                        panel.updatePatient(patient); // Refresh patient data in PatientPanel
+                        panel.updatePatient(result.getData()[0]); // Refresh patient data in PatientPanel
                         JOptionPane.showMessageDialog(this, "Patient updated successfully!", "Success",
                                         JOptionPane.INFORMATION_MESSAGE);
                 } else {

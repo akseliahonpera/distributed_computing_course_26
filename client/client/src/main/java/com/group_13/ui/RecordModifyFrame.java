@@ -114,9 +114,9 @@ public class RecordModifyFrame extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {
         recordDataPanel1.updateRecordData(record, patient);
-        Result<Void> result = RecordService.getInstance().updateRecord(record);
+        Result<Record[]> result = RecordService.getInstance().updateRecord(record);
         if (result.isSuccess()) {
-            panel.updateRecord(record);     // Refresh record data in RecordPanel
+            panel.updateRecord(result.getData()[0]);     // Refresh record data in RecordPanel
             JOptionPane.showMessageDialog(this, "Record updated successfully!", "Success",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {

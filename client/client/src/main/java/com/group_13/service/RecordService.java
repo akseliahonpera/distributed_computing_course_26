@@ -65,24 +65,26 @@ public class RecordService {
         return new Result<Record[]>(success, null, "Failed to fetch records. HTTP status code: " + response.getStatusCode());
     }
 
-    public Result<Void> createRecord(Record record) throws Exception {
+    public Result<Record[]> createRecord(Record record) throws Exception {
         boolean success = false;
         ApiResponse response = recordAPI.createRecord(record);
         if (response.getStatusCode() == 200) {
             success = true;
-            return new Result<Void>(success, null, "Succesfully created record");
+            Record[] records = objectMapper.readValue(response.getBody(), Record[].class);
+            return new Result<Record[]>(success, records, "Succesfully created record");
         }
-        return new Result<Void>(success, null, "Failed to create record. HTTP status code: " + response.getStatusCode());
+        return new Result<Record[]>(success, null, "Failed to create record. HTTP status code: " + response.getStatusCode());
     }
 
-    public Result<Void> updateRecord(Record record) throws Exception {
+    public Result<Record[]> updateRecord(Record record) throws Exception {
         boolean success = false;
         ApiResponse response = recordAPI.updateRecord(record);
         if (response.getStatusCode() == 200) {
             success = true;
-            return new Result<Void>(success, null, "Succesfully updated record");
+            Record[] records = objectMapper.readValue(response.getBody(), Record[].class);
+            return new Result<Record[]>(success, records, "Succesfully updated record");
         }
-        return new Result<Void>(success, null, "Failed to update record. HTTP status code: " + response.getStatusCode());
+        return new Result<Record[]>(success, null, "Failed to update record. HTTP status code: " + response.getStatusCode());
     }
 
     public Result<Void> deleteRecord(Record record) throws Exception {

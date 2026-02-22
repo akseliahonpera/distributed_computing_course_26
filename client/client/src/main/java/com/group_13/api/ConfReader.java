@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class ConfReader {
-    
+    /*
+    This class can be used to read config files with host information on each row. 
+    Returns arraylist of Host objects built from the config file.
+    */
     public ArrayList<Host> loadFromFile(String filePath) {
         try {
             String str = Files.readString(Path.of(filePath));

@@ -94,9 +94,9 @@ public class PatientCreateFrame extends javax.swing.JFrame {
         patient = new Patient();
         patientDataPanel1.updatePatientData(patient);
         try {
-            Result<Void> result = PatientService.getInstance().createPatient(patient);
+            Result<Patient[]> result = PatientService.getInstance().createPatient(patient);
             if (result.isSuccess()) {
-                panel.addPatient(patient);     // Refresh patient data in PatientPanel
+                panel.addPatient(result.getData()[0]);     // Refresh patient data in PatientPanel
                 JOptionPane.showMessageDialog(this, "Patient created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
             } else {

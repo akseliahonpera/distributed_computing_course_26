@@ -90,9 +90,9 @@ public class RecordCreateFrame extends javax.swing.JFrame {
         record = new Record();
         recordDataPanel1.updateRecordData(record, patient);
         try {
-            Result<Void> result = RecordService.getInstance().createRecord(record);
+            Result<Record[]> result = RecordService.getInstance().createRecord(record);
             if (result.isSuccess()) {
-                panel.addRecord(record);     // Refresh record data in RecordPanel
+                panel.addRecord(result.getData()[0]);     // Refresh record data in RecordPanel
                 JOptionPane.showMessageDialog(this, "Record created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
             } else {

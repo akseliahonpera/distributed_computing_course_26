@@ -70,30 +70,32 @@ public class PatientService {
         }
 
 
-    public Result<Void> createPatient(Patient patient) throws Exception {
+    public Result<Patient[]> createPatient(Patient patient) throws Exception {
         System.out.println("Trying to create patienet");
         System.out.println(patient);
         boolean success = false;
         ApiResponse response = patientAPI.createPatient(patient);
         if (response.getStatusCode() == 200) {
             success = true;
+            Patient[] patientData = objectMapper.readValue(response.getBody(), Patient[].class);
             System.out.println("Patient create api call Success");
-            return new Result<Void>(success, null, "Succesfully created patient");
+            return new Result<Patient[]>(success, patientData, "Succesfully created patient");
         }
         System.out.println("Patient create api call Failed");
-        return new Result<Void>(success, null,
+        return new Result<Patient[]>(success, null,
             
                 "Failed to create patient. HTTP status code: " + response.getStatusCode());
     }
 
-    public Result<Void> updatePatient(Patient patient) throws Exception {
+    public Result<Patient[]> updatePatient(Patient patient) throws Exception {
         boolean success = false;
         ApiResponse response = patientAPI.updatePatient(patient);
         if (response.getStatusCode() == 200) {
             success = true;
-            return new Result<Void>(success, null, "Succesfully updated patient");
+            Patient[] patientData = objectMapper.readValue(response.getBody(), Patient[].class);
+            return new Result<Patient[]>(success, patientData, "Succesfully updated patient");
         }
-        return new Result<Void>(success, null,
+        return new Result<Patient[]>(success, null,
                 "Failed to update patient. HTTP status code: " + response.getStatusCode());
     }
 
