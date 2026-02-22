@@ -106,6 +106,8 @@ public class RequestHandler implements HttpHandler
 
         JSONObject object = new JSONObject(bodyText);
 
+        System.out.println("Bodytext: " + bodyText);
+
         //Records are supposed to owned by same node which owns Patient
         if (object.has("patientid")) {
             //Check if we own Patient
@@ -199,6 +201,8 @@ public class RequestHandler implements HttpHandler
         String credentialsJSON = ServerUtility.GetBodyText(t);
         JSONObject object = new JSONObject(credentialsJSON);
 
+        System.out.println("Received credentials: " + credentialsJSON);
+
         String username = object.getString("user");
         String password = object.getString("password");
         
@@ -209,8 +213,12 @@ public class RequestHandler implements HttpHandler
             responseJSON.put("token", token.getTokenStr());
             responseJSON.put("expiration", token.getExpirationTime());
 
+            System.out.println("Credentials ok. Sending response: " + responseJSON.toString());
+
             ServerUtility.sendResponse(t, responseJSON.toString(), ServerUtility.HttpStatus.OK);
         } else {
+            System.out.println("Credentials not ok!!!");
+
             //No token for this client
             ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
         }
@@ -226,6 +234,8 @@ public class RequestHandler implements HttpHandler
 
         boolean validToken =  (token != null && TokenValidator.getInstance().isValidTokenStr(token));
         boolean mtlsUsed = false;
+
+        System.out.println("Received token: " + token);
         
         if (t instanceof HttpsExchange https) {
             SSLSession session = https.getSSLSession();
@@ -268,6 +278,9 @@ public class RequestHandler implements HttpHandler
                 return;
             }
 
+            System.out.println("Authorization ok!");
+            System.out.println(uri.toString());
+
             String table;
             switch (uri.getPath()) {
                 case "/api/patients" -> table = "patients";
@@ -281,6 +294,8 @@ public class RequestHandler implements HttpHandler
 
             String method = t.getRequestMethod();
 
+            System.out.println("Method: " + method);
+            
             if (table.equals("sync")) {
                 if (method.equalsIgnoreCase("GET")) {
                     handleSyncRequest(t, query);

@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 
 import com.group_13.api.ConfReader;
 import com.group_13.api.Host;
-import com.group_13.api.confReader;
 
 public class ServerChoser extends JDialog {
 

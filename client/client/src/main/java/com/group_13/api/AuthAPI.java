@@ -1,6 +1,5 @@
 package com.group_13.api;
 
-import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import com.group_13.model.ApiResponse;
 
 public class AuthAPI extends BaseAPI {
     private static final AuthAPI INSTANCE = new AuthAPI();
-    private static final String AUTH_ENDPOINT = BASE_URL + "auth/token";
+    private static final String AUTH_ENDPOINT = BASE_URL + "/auth/token";
 
     private AuthAPI() {
         super();

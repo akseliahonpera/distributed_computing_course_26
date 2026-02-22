@@ -26,28 +26,24 @@ public class Server {
                                             char[] password) throws Exception {
 
         // ---- Load node key material (client cert + private key) ----
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        try (FileInputStream in = new FileInputStream(nodeKeystoreP12Path)) {
-            keyStore.load(in, password);
-        }
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(
-            KeyManagerFactory.getDefaultAlgorithm()
-        );
-        kmf.init(keyStore, password);
-
-        // ---- Load trust material (cluster CA) ----
         KeyStore trustStore = KeyStore.getInstance("PKCS12");
-        try (FileInputStream in = new FileInputStream(truststoreP12Path)) {
-            trustStore.load(in, password);
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+
+        try (FileInputStream keyStoreFile = new FileInputStream(nodeKeystoreP12Path);
+             FileInputStream trustStorefile = new FileInputStream(truststoreP12Path)) {
+            keyStore.load(keyStoreFile, password);
+            trustStore.load(trustStorefile, password);
+        } catch (Exception e) {
+            System.out.println("Cannot read keystores. Check that cert folder is contains correct keystore files!");
+            return null;
         }
 
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(
-            TrustManagerFactory.getDefaultAlgorithm()
-        );
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+
+        kmf.init(keyStore, password);
         tmf.init(trustStore);
 
-        // ---- Build SSL context for mTLS ----
         SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
@@ -75,6 +71,8 @@ public class Server {
     }
 
     public static void main(String[] args) throws IOException, Exception {
+
+        System.out.println("Working Directory: " + System.getProperty("user.dir"));
 
         String configFile = null;
         int serverID = (args.length == 0) ? 0 : Integer.parseInt(args[0]);
