@@ -30,3 +30,9 @@ replay_pid*
 dependency-reduced-pom.xml¨
 
 *.txt
+
+
+# Certs
+.p12
+.crt
+.csr

@@ -4,33 +4,62 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
 import java.security.KeyStore;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
 
 
 public class Server {
-    private static SSLContext myServerSSLContext(String keystorePath, String keystorePw) throws Exception {
-        char[] passphrase = keystorePw.toCharArray();
+    static public HttpClient client = null;
 
-        KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream(keystorePath), passphrase);
+    public static SSLContext getSSLContext(String nodeKeystoreP12Path,
+                                            String truststoreP12Path,
+                                            char[] password) throws Exception {
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, passphrase);
+        // ---- Load node key material (client cert + private key) ----
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        try (FileInputStream in = new FileInputStream(nodeKeystoreP12Path)) {
+            keyStore.load(in, password);
+        }
 
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(ks);
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(
+            KeyManagerFactory.getDefaultAlgorithm()
+        );
+        kmf.init(keyStore, password);
 
-        SSLContext ssl = SSLContext.getInstance("TLS");
-        ssl.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+        // ---- Load trust material (cluster CA) ----
+        KeyStore trustStore = KeyStore.getInstance("PKCS12");
+        try (FileInputStream in = new FileInputStream(truststoreP12Path)) {
+            trustStore.load(in, password);
+        }
 
-        return ssl;
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+            TrustManagerFactory.getDefaultAlgorithm()
+        );
+        tmf.init(trustStore);
+
+        // ---- Build SSL context for mTLS ----
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        return sslContext;
+    }
+
+
+    private static void createHttpClient(SSLContext sslContext)
+    {
+        client = HttpClient.newBuilder()
+                .sslContext(sslContext)
+                .build();
     }
 
     private static void initHospitalNetwork(String confFilePath) throws Exception {
@@ -84,31 +113,33 @@ public class Server {
         DataBaseManager.getOwnDataBase();
         createRootUserIfNotExists();
 
+        SSLContext sslContext = getSSLContext("certs/" + HospitalNetwork.getInstance().getLocalNode().getName() + ".p12",
+                                              "certs/ds26-truststore.p12",
+                                              "Gambiinakiuas522".toCharArray());
+
+
+        createHttpClient(sslContext);
+
         try {
             System.out.println("Server address: " + fullAddress);
             System.out.println(serverName + " started...");
 
-            // SSL DISABLED FOR TESTING PURPOSES!!!
 
-            // SSLContext sslContext = myServerSSLContext("keystore.jks", "salasana1");
+            HttpsServer server = HttpsServer.create(new InetSocketAddress(portNumber),0);
 
-            // HttpsServer server = HttpsServer.create(new InetSocketAddress(8001),0);
+            server.setHttpsConfigurator(new HttpsConfigurator(sslContext)
+            {
+                @Override
+                public void configure (HttpsParameters params) {
+                    SSLParameters sslparams = sslContext.getDefaultSSLParameters();
 
-            /*
-             * server.setHttpsConfigurator (new HttpsConfigurator(sslContext)
-             * {
-             * public void configure (HttpsParameters params) {
-             * 
-             * //InetSocketAddress remote = params.getClientAddress();
-             * SSLContext c = getSSLContext();
-             * SSLParameters sslparams = c.getDefaultSSLParameters();
-             * 
-             * params.setSSLParameters(sslparams);
-             * }
-             * });
-             */
+                    sslparams.setWantClientAuth(true);
 
-            HttpServer server = HttpServer.create(new InetSocketAddress(portNumber), 0);
+                    params.setSSLParameters(sslparams); 
+                }
+            });
+
+            //HttpServer server = HttpServer.create(new InetSocketAddress(portNumber), 0);
 
             server.createContext("/api", new RequestHandler());
             server.setExecutor(Executors.newCachedThreadPool());

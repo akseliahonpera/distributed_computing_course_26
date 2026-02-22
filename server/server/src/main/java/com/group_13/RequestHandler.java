@@ -3,7 +3,6 @@ package com.group_13;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
@@ -29,7 +28,7 @@ public class RequestHandler implements HttpHandler
 
         System.out.println("Forwarding " + method + " request for table " + table);
 
-        String fullUrl = "http://" + node.getAddress() + "/api/" + table + (query.isEmpty() ? "" : "?" + ServerUtility.encodeParams(query));
+        String fullUrl = "https://" + node.getAddress() + "/api/" + table + (query.isEmpty() ? "" : "?" + ServerUtility.encodeParams(query));
 
         HttpRequest request;
         HttpRequest.Builder builder = HttpRequest.newBuilder()
@@ -47,9 +46,7 @@ public class RequestHandler implements HttpHandler
             return;
         }
 
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpResponse<String> response = client.send(
+        HttpResponse<String> response = Server.client.send(
                 request,
                 HttpResponse.BodyHandlers.ofString()
         );
