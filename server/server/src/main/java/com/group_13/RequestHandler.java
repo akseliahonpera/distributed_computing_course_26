@@ -24,6 +24,7 @@ public class RequestHandler implements HttpHandler
 
     private void forwardRequest(HospitalNode node, HttpExchange t, String bodyText, Map<String, String> query, String table, String method) throws Exception
     {
+        /*This method forwards http exchange to other server in the network.  */;
         System.out.println("Forwarding " + method + " request for table " + table);
 
         String fullUrl = "http://" + node.getAddress() + "/api/" + table + "?" + ServerUtility.encodeParams(query);

@@ -88,6 +88,7 @@ public class HospitalNode {
 
     public Token getAuthToken() {
         if (authToken == null || authToken.hasExpired()) {
+            System.out.println("auttok_null");
             authToken = AuthService.getAuthTokenForServer(address);
         }
         return authToken;

@@ -25,7 +25,7 @@ public class AuthService
     {
         try {
             String fullUrl = "http://" + serverAddress + "/api/auth/token";
-            
+            System.out.println("täysurl: "+fullUrl);
             JSONObject obj = new JSONObject();
             obj.put("user", getRootUsername());
             obj.put("password", getRootPassword());
