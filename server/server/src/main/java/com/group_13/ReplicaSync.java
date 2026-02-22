@@ -76,10 +76,9 @@ public class ReplicaSync
         String fullUrl = "https://" + node.getAddress() + "/api/sync?since=" + Long.toString(sinceMs);
         
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(fullUrl))
-                .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr())
-                .GET()
-                .build();
+                                         .uri(URI.create(fullUrl))
+                                         .GET()
+                                         .build();
 
         HttpResponse<String> response = Server.client.send(
                 request,
@@ -98,10 +97,9 @@ public class ReplicaSync
         String fullUrl = "https://" + node.getAddress() + "/api/sync?logid=" + Long.toString(logId);
         
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(fullUrl))
-                .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr())
-                .GET()
-                .build();
+                                         .uri(URI.create(fullUrl))
+                                         .GET()
+                                         .build();
 
         HttpResponse<String> response = Server.client.send(
                 request,

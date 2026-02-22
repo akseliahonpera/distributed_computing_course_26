@@ -9,11 +9,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Map;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpsExchange;
 
 public class RequestHandler implements HttpHandler
 {
@@ -31,9 +35,7 @@ public class RequestHandler implements HttpHandler
         String fullUrl = "https://" + node.getAddress() + "/api/" + table + (query.isEmpty() ? "" : "?" + ServerUtility.encodeParams(query));
 
         HttpRequest request;
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(fullUrl))
-                .header("Authorization", "Bearer " + node.getAuthToken().getTokenStr());
+        HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(fullUrl));
 
         if (method.equalsIgnoreCase("INSERT")) {
             request = builder.POST(HttpRequest.BodyPublishers.ofString(bodyText)).build();
@@ -209,8 +211,39 @@ public class RequestHandler implements HttpHandler
 
             ServerUtility.sendResponse(t, responseJSON.toString(), ServerUtility.HttpStatus.OK);
         } else {
+            //No token for this client
             ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    boolean checkAuthorization(HttpExchange t) throws Exception
+    {
+        //Mutual TLS is used for node-node communication
+        //Normal TLS + bearer authorization is used for client-node communication
+        //Bearer token is issued by /api/auth/token endpoint when credentials are valid (username + password)
+
+        String token = ServerUtility.extractBearerToken(t);
+
+        boolean validToken =  (token != null && TokenValidator.getInstance().isValidTokenStr(token));
+        boolean mtlsUsed = false;
+        
+        if (t instanceof HttpsExchange https) {
+            SSLSession session = https.getSSLSession();
+            try {
+                //Throws if client didn't present valid certificate
+                String clientDn = session.getPeerPrincipal().getName();
+                
+                System.out.println("New connection with mTLS. ClientDn: " + clientDn);
+
+                mtlsUsed = true;
+            } catch (SSLPeerUnverifiedException ignored) {
+                System.out.println("New connection without mTLS. Authorization required!");
+
+                mtlsUsed = false;
+            }
+        }
+
+        return (mtlsUsed || validToken);
     }
 
     @Override
@@ -222,17 +255,16 @@ public class RequestHandler implements HttpHandler
             Map<String, String> query = ServerUtility.parseQuery(t);
 
             if (uri.getPath().equals("/api/auth/token")) {
+                //This function check if client sent valid credentials
+                //If credentials are correct, token is issued
                 HandleAuthRequest(t);
                 return;
             }
 
-            String token = ServerUtility.extractBearerToken(t);
-            if (token == null || !TokenValidator.getInstance().isValidTokenStr(token)) {
+            //Lets check authorization
+            if (!checkAuthorization(t)) {
+                System.out.println("Unauthorized client, mTLS or valid bearer token is required.");
                 ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
-                System.out.println("Unauthorized. No valid token!");
-                if (token != null) {
-                    System.out.println("Token: " + token);
-                }
                 return;
             }
 

@@ -58,8 +58,8 @@ public class Server {
     private static void createHttpClient(SSLContext sslContext)
     {
         client = HttpClient.newBuilder()
-                .sslContext(sslContext)
-                .build();
+                           .sslContext(sslContext)
+                           .build();
     }
 
     private static void initHospitalNetwork(String confFilePath) throws Exception {
@@ -135,7 +135,7 @@ public class Server {
 
                     sslparams.setWantClientAuth(true);
 
-                    params.setSSLParameters(sslparams); 
+                    params.setSSLParameters(sslparams);
                 }
             });
 
