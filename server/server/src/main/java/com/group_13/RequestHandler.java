@@ -201,8 +201,6 @@ public class RequestHandler implements HttpHandler
         String credentialsJSON = ServerUtility.GetBodyText(t);
         JSONObject object = new JSONObject(credentialsJSON);
 
-        System.out.println("Received credentials: " + credentialsJSON);
-
         String username = object.getString("user");
         String password = object.getString("password");
         
@@ -232,11 +230,9 @@ public class RequestHandler implements HttpHandler
 
         String token = ServerUtility.extractBearerToken(t);
 
-        boolean validToken =  (token != null && TokenValidator.getInstance().isValidTokenStr(token));
-        boolean mtlsUsed = false;
+        boolean isValidToken =  (token != null && TokenValidator.getInstance().isValidTokenStr(token));
+        boolean isMtlsUsed = false;
 
-        System.out.println("Received token: " + token);
-        
         if (t instanceof HttpsExchange https) {
             SSLSession session = https.getSSLSession();
             try {
@@ -245,15 +241,21 @@ public class RequestHandler implements HttpHandler
                 
                 System.out.println("New connection with mTLS. ClientDn: " + clientDn);
 
-                mtlsUsed = true;
+                isMtlsUsed = true;
             } catch (SSLPeerUnverifiedException ignored) {
                 System.out.println("New connection without mTLS. Authorization required!");
 
-                mtlsUsed = false;
+                isMtlsUsed = false;
             }
         }
 
-        return (mtlsUsed || validToken);
+        if (isValidToken) {
+            //If token leaks, attacker could keep token alive infinitely
+            //Maybe client should request new token when token expires instead of refreshing token on every request
+            TokenValidator.getInstance().refreshTokenStr(token);
+        }
+
+        return (isMtlsUsed || isValidToken);
     }
 
     @Override
@@ -278,9 +280,6 @@ public class RequestHandler implements HttpHandler
                 return;
             }
 
-            System.out.println("Authorization ok!");
-            System.out.println(uri.toString());
-
             String table;
             switch (uri.getPath()) {
                 case "/api/patients" -> table = "patients";
@@ -294,8 +293,6 @@ public class RequestHandler implements HttpHandler
 
             String method = t.getRequestMethod();
 
-            System.out.println("Method: " + method);
-            
             if (table.equals("sync")) {
                 if (method.equalsIgnoreCase("GET")) {
                     handleSyncRequest(t, query);

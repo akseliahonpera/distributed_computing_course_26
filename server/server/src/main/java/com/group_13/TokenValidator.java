@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 
 public final class TokenValidator {
+    private static final long TOKEN_DURATION = 60*15;
+
     private static TokenValidator INSTANCE;
     private HashMap<String, Token> tokens = null;
 
@@ -21,7 +23,7 @@ public final class TokenValidator {
 
     public synchronized Token newToken()
     {
-        Token newToken = new Token(60*15);
+        Token newToken = new Token(TOKEN_DURATION);
 
         tokens.put(newToken.getTokenStr(), newToken);
 
@@ -33,5 +35,11 @@ public final class TokenValidator {
             return false;
         }
         return !tokens.get(tokenStr).hasExpired();
+    }
+
+    public void refreshTokenStr(String tokenStr) {
+        if (tokens.containsKey(tokenStr)) {
+            tokens.get(tokenStr).refresh(TOKEN_DURATION);
+        }
     }
 }
