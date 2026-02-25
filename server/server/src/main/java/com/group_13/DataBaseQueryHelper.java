@@ -80,10 +80,8 @@ class DataBaseQueryHelper
     {
         Set<String> validColumns = getTableColumns(conn, tableName);
         StringBuilder querySB = new StringBuilder("SELECT * FROM ");
-
         querySB.append(tableName);
         querySB.append(" WHERE ");
-
         ArrayList<String> values = new ArrayList<>();
         boolean first = true;
         for (String key : params.keySet()) {
@@ -94,32 +92,29 @@ class DataBaseQueryHelper
             if (!first) {
                 querySB.append(" AND ");
             }
-            querySB.append(key);
+            //if key for the query is id skip it since LIKE might screw something up
+            if(key.equalsIgnoreCase("id")){
+                continue;
+            }
 
+            querySB.append(key);
             querySB.append(" LIKE ?");
-           
             values.add("%" +params.get(key)+"%");
-    
             first = false;
         }
-
         if (values.size() < 1) {
             querySB = new StringBuilder("SELECT * FROM ");
             querySB.append(tableName);
             return conn.prepareStatement(querySB.toString());
         }
-
         PreparedStatement stmt = conn.prepareStatement(querySB.toString());
-
         System.out.println(querySB.toString());
 
         int index = 1;
         for (String v : values) {
             stmt.setString(index++, v);
         }
-
         System.out.println(stmt.toString());
-        
         return stmt;
     }
 
@@ -137,11 +132,9 @@ class DataBaseQueryHelper
         JSONArray jsonArray = new JSONArray();
         //Try matching query
         try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params)) {
-
             ResultSet rs = stmt.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
             int columnCount = meta.getColumnCount();
-           
             while (rs.next()) {
                 JSONObject obj = new JSONObject();
                 
@@ -150,7 +143,6 @@ class DataBaseQueryHelper
                 }
                 jsonArray.put(obj);
             }
-            
         }
         if (!jsonArray.isEmpty()){
             return jsonArray;
