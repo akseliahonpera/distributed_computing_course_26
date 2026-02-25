@@ -5,10 +5,13 @@
 package com.group_13.ui;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import com.group_13.model.Patient;
 import com.group_13.model.PatientTable;
 import com.group_13.model.Result;
 import com.group_13.service.PatientService;
+import com.group_13.service.RecordService;
 
 /**
  *
@@ -81,20 +84,61 @@ public class PatientSearchFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-            patient = new Patient();
-            patientDataPanel1.updatePatientData(patient);
-            // TODO: 
-            
-            try {
-                Patient[] patientlist = PatientService.getInstance().getPatient(patient).getData();
-                patientPanel.passQueryResults(patientlist);
-                
-            } catch (Exception g) {
-                // TODO Auto-generated catch block
-                g.printStackTrace();
-            }
-    }//GEN-LAST:event_jButton1ActionPerformed
+private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+
+    patient = new Patient();
+    patientDataPanel1.updatePatientData(patient);
+
+    // Disable UI while loading
+    jButton1.setEnabled(false);
+    jButton2.setEnabled(false);
+    setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+    PatientService.getInstance()
+            .getPatientAsync(patient)
+            .orTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+            .whenComplete((result, ex) -> {
+
+                javax.swing.SwingUtilities.invokeLater(() -> {
+
+                    // Restore UI
+                    setCursor(java.awt.Cursor.getDefaultCursor());
+                    jButton1.setEnabled(true);
+                    jButton2.setEnabled(true);
+
+                    // Network/timeout error
+                    if (ex != null) {
+                        JOptionPane.showMessageDialog(this,
+                                "Request failed: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Success
+                    if (result.isSuccess()) {
+                        Patient[] patients = result.getData();
+
+                        PatientPanel.getInstance().passQueryResults(patients);
+
+                        JOptionPane.showMessageDialog(this,
+                                "Successfully retrieved " + patients.length + " patients!",
+                                "Success",
+                                JOptionPane.INFORMATION_MESSAGE);
+
+                        dispose();
+                    }
+
+                    // Backend error
+                    else {
+                        JOptionPane.showMessageDialog(this,
+                                result.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            });
+}
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
             dispose();

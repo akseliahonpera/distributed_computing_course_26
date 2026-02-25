@@ -131,7 +131,7 @@ public class DataBaseManager
             String dbName = getDataBaseName(node);
             //String dbName = "ds26";
             String dbUser = "root";
-            String dbPw = "Gambiinakiuas522";
+            String dbPw = "root";
 
 
             //Owner of objects are encoded to id top bits
