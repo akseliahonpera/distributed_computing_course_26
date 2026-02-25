@@ -195,6 +195,7 @@ class DataBaseQueryHelper
             
             ArrayList<Object> values = new ArrayList<>();
 
+            // TODO: Pitäskö tyhjäkenttäisiä olioita pystyä postaamaan? Patientit ei postaudu tyhjllä kentillä.
             boolean first = true;
             for (String key : object.keySet()) {
                 if (!validColumns.contains(key) ||

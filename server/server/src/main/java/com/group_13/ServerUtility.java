@@ -80,6 +80,11 @@ public class ServerUtility {
     static void sendResponse(HttpExchange t, String text, int statusCode) throws UnsupportedEncodingException, IOException
     {
         byte [] rawData = text.getBytes("UTF-8");
+        // try {
+        // Thread.sleep(1000);
+        // } catch (InterruptedException e) {
+        //     // Ignore
+        // }
 
         try (OutputStream stream = t.getResponseBody()) {
             t.sendResponseHeaders(statusCode, rawData.length);
@@ -90,6 +95,11 @@ public class ServerUtility {
 
     static void sendResponse(HttpExchange t, String text, HttpStatus status) throws UnsupportedEncodingException, IOException
     {
+        // try {
+        // Thread.sleep(1000);
+        // } catch (InterruptedException e) {
+        //     // Ignore
+        // }
         sendResponse(t, text, status.code);
     }
 

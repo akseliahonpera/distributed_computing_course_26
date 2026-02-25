@@ -130,8 +130,8 @@ public class DataBaseManager
             String dbPath = "jdbc:mysql://localhost:3306/";
             String dbName = getDataBaseName(node);
             //String dbName = "ds26";
-            String dbUser = "DS26Server";
-            String dbPw = "Gambiinakiuas522";
+            String dbUser = "root";
+            String dbPw = "root";
 
 
             //Owner of objects are encoded to id top bits

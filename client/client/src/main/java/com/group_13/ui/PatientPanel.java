@@ -4,6 +4,7 @@
  */
 package com.group_13.ui;
 
+import java.awt.Cursor;
 import java.util.*;
 import com.group_13.model.*;
 import com.group_13.service.PatientService;
@@ -93,7 +94,6 @@ public class PatientPanel extends javax.swing.JPanel {
         table.setPatients(list);
     }
 
-    
     public void updatePatient(Patient patient) {
         table.updatePatient(patient);
     }
@@ -212,6 +212,7 @@ public class PatientPanel extends javax.swing.JPanel {
     }// GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {
+
         if (patient == null) {
             JOptionPane.showMessageDialog(this,
                     "Please select a patient to delete.",
@@ -230,39 +231,61 @@ public class PatientPanel extends javax.swing.JPanel {
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete patient " + patient.getFName() + " " + patient.getLName() + "?",
+                "Are you sure you want to delete patient "
+                        + patient.getFName() + " "
+                        + patient.getLName() + "?",
                 "Confirm Deletion",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            try {
-                Result<Void> result = PatientService.getInstance().deletePatient(patient);
-                if (result.isSuccess()) {
-                    JOptionPane.showMessageDialog(this,
-                            "Patient deleted successfully.",
-                            "Deleted",
-                            JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            "Failed to delete patient!",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                table.deletePatient(patient);
-                patient = null;
-
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this,
-                        "Error deleting patient: " + e.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
         }
-    }// GEN-LAST:event_jButton4ActionPerformed
+
+        // TODO: What to disable while deleting?
+        // Wait cursor
+        getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        PatientService.getInstance()
+                .deletePatientAsync(patient)
+                .orTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                .whenComplete((result, ex) -> {
+
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+
+                        // Restore cursor
+                        getRootPane().setCursor(java.awt.Cursor.getDefaultCursor());
+
+                        // Timeout / network error
+                        if (ex != null) {
+                            JOptionPane.showMessageDialog(this,
+                                    "Request failed: " + ex.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        // Success
+                        if (result.isSuccess()) {
+
+                            JOptionPane.showMessageDialog(this,
+                                    "Patient deleted successfully.",
+                                    "Deleted",
+                                    JOptionPane.INFORMATION_MESSAGE);
+
+                            table.deletePatient(patient);
+                            patient = null;
+
+                        // Backend error
+                        } else {
+                            JOptionPane.showMessageDialog(this,
+                                    result.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

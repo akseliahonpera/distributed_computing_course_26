@@ -1,14 +1,14 @@
 package com.group_13.api;
 
-
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.group_13.model.Record;
@@ -33,6 +33,19 @@ public class RecordAPI extends BaseAPI {
         return INSTANCE;
     }
 
+    public CompletableFuture<ApiResponse> getAllRecordsAsync() {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RECORDS_ENDPOINT))
+                .header("Authorization", "Bearer " + getToken())
+                .GET()
+                .build();
+
+        CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
+                HttpResponse.BodyHandlers.ofString());
+        return futureResponse.thenApply(
+                response -> new ApiResponse(response.statusCode(), response.body(), response.headers().map()));
+    }
+
     public ApiResponse getAllRecords() throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT))
@@ -42,6 +55,25 @@ public class RecordAPI extends BaseAPI {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
+    }
+
+    public CompletableFuture<ApiResponse> getRecordAsync(Record record) {
+        try {
+            String queryString = recordToQueryString(record);
+            System.out.println("Query string: " + queryString); // Debugging line
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(RECORDS_ENDPOINT + queryString))
+                    .header("Authorization", "Bearer " + getToken())
+                    .GET()
+                    .build();
+
+            CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
+                    HttpResponse.BodyHandlers.ofString());
+            return futureResponse.thenApply(
+                    response -> new ApiResponse(response.statusCode(), response.body(), response.headers().map()));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     public ApiResponse getRecord(Record record) throws Exception {
@@ -58,6 +90,25 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
+    public CompletableFuture<ApiResponse> getRecordByIdAsync(Record record) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(RECORDS_ENDPOINT + "?id="
+                            + URLEncoder.encode(record.getId(), "UTF-8")))
+                    .header("Authorization", "Bearer " + getToken())
+                    .GET()
+                    .build();
+
+            CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
+                    HttpResponse.BodyHandlers.ofString());
+            return futureResponse.thenApply(
+                    response -> new ApiResponse(response.statusCode(), response.body(), response.headers().map()));
+
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
     public ApiResponse getRecordById(Record record) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(RECORDS_ENDPOINT + "?id="
@@ -68,6 +119,24 @@ public class RecordAPI extends BaseAPI {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
+    }
+
+    public CompletableFuture<ApiResponse> getRecordsByPatientIdAsync(Patient patient) {
+        try {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RECORDS_ENDPOINT + "?patientid="
+                        + URLEncoder.encode(patient.getId(), "UTF-8")))
+                .header("Authorization", "Bearer " + getToken())
+                .GET()
+                .build();
+
+        CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
+                HttpResponse.BodyHandlers.ofString());
+        return futureResponse.thenApply(
+                response -> new ApiResponse(response.statusCode(), response.body(), response.headers().map()));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     public ApiResponse getRecordsByPatientId(Patient patient) throws Exception {
@@ -82,8 +151,28 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
+    public CompletableFuture<ApiResponse> createRecordAsync(Record record) {
+        try {
+        String jsonBody = objectMapper.writeValueAsString(record);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RECORDS_ENDPOINT))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + getToken())
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
+                HttpResponse.BodyHandlers.ofString());
+        return futureResponse.thenApply(
+                response -> new ApiResponse(response.statusCode(), response.body(), response.headers().map()));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
     public ApiResponse createRecord(Record record) throws Exception {
-        
+
         String jsonBody = objectMapper.writeValueAsString(record);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -97,6 +186,27 @@ public class RecordAPI extends BaseAPI {
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
 
+    public CompletableFuture<ApiResponse> updateRecordAsync(Record record) {
+        try {
+        String jsonBody = objectMapper.writeValueAsString(record);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RECORDS_ENDPOINT + "?id="
+                        + URLEncoder.encode(record.getId(), "UTF-8")))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + getToken())
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
+                HttpResponse.BodyHandlers.ofString());
+        return futureResponse.thenApply(
+                response -> new ApiResponse(response.statusCode(), response.body(), response.headers().map()));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
     public ApiResponse updateRecord(Record record) throws Exception {
 
         String jsonBody = objectMapper.writeValueAsString(record);
@@ -108,9 +218,27 @@ public class RecordAPI extends BaseAPI {
                 .header("Authorization", "Bearer " + getToken())
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
-        
+
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
+    }
+
+    public CompletableFuture<ApiResponse> deleteRecordAsync(Record record) {
+        try {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(RECORDS_ENDPOINT + "?id="
+                        + URLEncoder.encode(record.getId(), "UTF-8")))
+                .header("Authorization", "Bearer " + getToken())
+                .DELETE()
+                .build();
+
+        CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
+                HttpResponse.BodyHandlers.ofString());
+        return futureResponse.thenApply(
+                response -> new ApiResponse(response.statusCode(), response.body(), response.headers().map()));
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     public ApiResponse deleteRecord(Record record) throws Exception {

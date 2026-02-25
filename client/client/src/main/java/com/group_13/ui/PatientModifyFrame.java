@@ -17,7 +17,6 @@ import com.group_13.service.RecordService;
  */
 public class PatientModifyFrame extends javax.swing.JFrame {
 
-
         /**
          * Creates new form PatientModifyFrame
          */
@@ -126,19 +125,58 @@ public class PatientModifyFrame extends javax.swing.JFrame {
                 pack();
         }// </editor-fold>//GEN-END:initComponents
 
-        private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {// GEN-FIRST:event_jButton1ActionPerformed
+        private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+
+                // Update patient object with form data
                 patientDataPanel1.updatePatientData(patient);
-                Result<Patient[]> result = PatientService.getInstance().updatePatient(patient);
-                if (result.isSuccess()) {
-                        panel.updatePatient(result.getData()[0]); // Refresh patient data in PatientPanel
-                        JOptionPane.showMessageDialog(this, "Patient updated successfully!", "Success",
-                                        JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                        JOptionPane.showMessageDialog(this, "Failed to update patient", "Error",
-                                        JOptionPane.ERROR_MESSAGE);
-                }
-                dispose();
-        }// GEN-LAST:event_jButton1ActionPerformed
+
+                // disable buttons to prevent multiple clicks while waiting for response
+                jButton1.setEnabled(false);
+                jButton2.setEnabled(false);
+                // Set wait cursor while waiting for response
+                setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+                PatientService.getInstance()
+                                .updatePatientAsync(patient)
+                                .orTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                                .whenComplete((result, ex) -> {
+
+                                        javax.swing.SwingUtilities.invokeLater(() -> {
+
+                                                // Restore UI state
+                                                setCursor(java.awt.Cursor.getDefaultCursor());
+                                                jButton1.setEnabled(true);
+                                                jButton2.setEnabled(true);
+
+                                                // Timeout/network error
+                                                if (ex != null) {
+                                                        JOptionPane.showMessageDialog(this,
+                                                                        "Request failed: " + ex.getMessage(),
+                                                                        "Error",
+                                                                        JOptionPane.ERROR_MESSAGE);
+                                                        return;
+                                                }
+
+                                                // Success
+                                                if (result.isSuccess()) {
+                                                        panel.updatePatient(result.getData()[0]);
+                                                        JOptionPane.showMessageDialog(this,
+                                                                        "Patient updated successfully!",
+                                                                        "Success",
+                                                                        JOptionPane.INFORMATION_MESSAGE);
+                                                        dispose();
+                                                }
+                                                
+                                                // Backend error
+                                                else {
+                                                        JOptionPane.showMessageDialog(this,
+                                                                        result.getMessage(),
+                                                                        "Error",
+                                                                        JOptionPane.ERROR_MESSAGE);
+                                                }
+                                        });
+                                });
+        }
 
         private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton2ActionPerformed
                 dispose();
