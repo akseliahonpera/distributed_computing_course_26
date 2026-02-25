@@ -75,6 +75,54 @@ class DataBaseQueryHelper
         return stmt;
     }
 
+    /*Querybuilder for partial field values */
+    static public PreparedStatement buildPartialQuery(Connection conn, String tableName, Map<String,String> params) throws SQLException
+    {
+        Set<String> validColumns = getTableColumns(conn, tableName);
+        StringBuilder querySB = new StringBuilder("SELECT * FROM ");
+
+        querySB.append(tableName);
+        querySB.append(" WHERE ");
+
+        ArrayList<String> values = new ArrayList<>();
+        boolean first = true;
+        for (String key : params.keySet()) {
+            if (!validColumns.contains(key) ||
+                params.get(key).length() == 0) {
+                continue;
+            }
+            if (!first) {
+                querySB.append(" AND ");
+            }
+            querySB.append(key);
+
+            querySB.append(" LIKE ?");
+           
+            values.add("%" +params.get(key)+"%");
+    
+            first = false;
+        }
+
+        if (values.size() < 1) {
+            querySB = new StringBuilder("SELECT * FROM ");
+            querySB.append(tableName);
+            return conn.prepareStatement(querySB.toString());
+        }
+
+        PreparedStatement stmt = conn.prepareStatement(querySB.toString());
+
+        System.out.println(querySB.toString());
+
+        int index = 1;
+        for (String v : values) {
+            stmt.setString(index++, v);
+        }
+
+        System.out.println(stmt.toString());
+        
+        return stmt;
+    }
+
     static JSONArray queryWithRowId(DataBase db, String tableName, long rowId) throws SQLException, Exception
     {
         TreeMap<String,String> params = new TreeMap<>();
@@ -87,12 +135,13 @@ class DataBaseQueryHelper
     static JSONArray query(DataBase db, String tableName, Map<String,String> params) throws SQLException, Exception
     {
         JSONArray jsonArray = new JSONArray();
+        //Try matching query
         try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params)) {
 
             ResultSet rs = stmt.executeQuery();
-
             ResultSetMetaData meta = rs.getMetaData();
             int columnCount = meta.getColumnCount();
+           
             while (rs.next()) {
                 JSONObject obj = new JSONObject();
                 
@@ -101,8 +150,31 @@ class DataBaseQueryHelper
                 }
                 jsonArray.put(obj);
             }
+            
+        }
+        if (!jsonArray.isEmpty()){
+            return jsonArray;
+        }else{
+             //Go for partial search if matching did not work.
+        //Try matching query
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = buildPartialQuery(conn, tableName, params)) {
+
+            ResultSet rs = stmt.executeQuery();
+            ResultSetMetaData meta = rs.getMetaData();
+            int columnCount = meta.getColumnCount();
+           
+            while (rs.next()) {
+                JSONObject obj = new JSONObject();
+                
+                for (int i = 1; i <= columnCount; i++) {
+                    obj.put(meta.getColumnLabel(i), rs.getObject(i));
+                }
+                jsonArray.put(obj);
+            }
+            
         }
         return jsonArray;
+    }
     }
     /*https://stackoverflow.com/questions/5902310/how-do-i-validate-a-timestamp
     

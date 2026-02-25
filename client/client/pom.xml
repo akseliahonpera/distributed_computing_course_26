@@ -38,6 +38,7 @@
             <version>RELEASE280</version>
     </dependency>
 
+
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
@@ -70,6 +71,15 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
+          <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
+              <mainClass>com.group_13.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
