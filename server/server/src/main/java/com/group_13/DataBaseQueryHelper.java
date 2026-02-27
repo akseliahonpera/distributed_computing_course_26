@@ -17,6 +17,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 class DataBaseQueryHelper
@@ -31,7 +32,7 @@ class DataBaseQueryHelper
         return columnSet;
     }
 
-    static public PreparedStatement buildQuery(Connection conn, String tableName, Map<String,String> params) throws SQLException
+    static public PreparedStatement buildQuery(Connection conn, String tableName, Map<String,String> params, boolean like) throws SQLException
     {
         Set<String> validColumns = getTableColumns(conn, tableName);
         StringBuilder querySB = new StringBuilder("SELECT * FROM ");
@@ -50,8 +51,14 @@ class DataBaseQueryHelper
                 querySB.append(" AND ");
             }
             querySB.append(key);
-            querySB.append(" = ?");
-            values.add(params.get(key));
+
+            if (like) {
+                querySB.append(" LIKE ?");
+                values.add("%" + params.get(key) + "%");
+            } else {
+                querySB.append(" = ?");
+                values.add(params.get(key));
+            }
             first = false;
         }
 
@@ -63,14 +70,14 @@ class DataBaseQueryHelper
 
         PreparedStatement stmt = conn.prepareStatement(querySB.toString());
 
-        System.out.println(querySB.toString());
+        //System.out.println(querySB.toString());
 
         int index = 1;
         for (String v : values) {
             stmt.setString(index++, v);
         }
 
-        System.out.println(stmt.toString());
+        //System.out.println(stmt.toString());
         
         return stmt;
     }
@@ -81,25 +88,34 @@ class DataBaseQueryHelper
 
         params.put("id", Long.toString(rowId));
 
-        return query(db, tableName, params);
+        return query(db, tableName, params, false);
     }
 
     static JSONArray query(DataBase db, String tableName, Map<String,String> params) throws SQLException, Exception
     {
+        return query(db, tableName, params, true);
+    }
+
+    static JSONArray query(DataBase db, String tableName, Map<String,String> params, boolean doLikeQuery) throws SQLException, Exception
+    {
         JSONArray jsonArray = new JSONArray();
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params)) {
-
-            ResultSet rs = stmt.executeQuery();
-
-            ResultSetMetaData meta = rs.getMetaData();
-            int columnCount = meta.getColumnCount();
-            while (rs.next()) {
-                JSONObject obj = new JSONObject();
-                
-                for (int i = 1; i <= columnCount; i++) {
-                    obj.put(meta.getColumnLabel(i), rs.getObject(i));
+        for (int b = 0; b < 2; b++) {
+            boolean like = (b > 0);
+            try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params, like)) {
+                ResultSet rs = stmt.executeQuery();
+                ResultSetMetaData meta = rs.getMetaData();
+                int columnCount = meta.getColumnCount();
+                while (rs.next()) {
+                    JSONObject obj = new JSONObject();
+                    
+                    for (int i = 1; i <= columnCount; i++) {
+                        obj.put(meta.getColumnLabel(i), rs.getObject(i));
+                    }
+                    jsonArray.put(obj);
                 }
-                jsonArray.put(obj);
+            }
+            if (!jsonArray.isEmpty() || !doLikeQuery) {
+                return jsonArray;
             }
         }
         return jsonArray;
@@ -131,6 +147,7 @@ class DataBaseQueryHelper
             
             ArrayList<Object> values = new ArrayList<>();
 
+            // TODO: Pitäskö tyhjäkenttäisiä olioita pystyä postaamaan? Patientit ei postaudu tyhjllä kentillä.
             boolean first = true;
             for (String key : object.keySet()) {
                 if (!validColumns.contains(key) ||
@@ -165,7 +182,7 @@ class DataBaseQueryHelper
             insertSB.append(String.join(", ", Collections.nCopies(values.size(), "?")));
             insertSB.append(")");
 
-            System.out.println(insertSB.toString());
+            //System.out.println(insertSB.toString());
 
             try (PreparedStatement stmt = conn.prepareStatement(insertSB.toString(), Statement.RETURN_GENERATED_KEYS)) {
                 int index = 1;
@@ -226,7 +243,7 @@ class DataBaseQueryHelper
 
             updateSB.append(" WHERE id=?");
             values.add(id);
-            System.out.println(updateSB.toString());
+            //System.out.println(updateSB.toString());
 
             try (PreparedStatement stmt = conn.prepareStatement(updateSB.toString())) {
                 int index = 1;
@@ -253,7 +270,7 @@ class DataBaseQueryHelper
             updateSB.append(tableName);
 
             updateSB.append(" WHERE id= ?");
-            System.out.println(updateSB.toString());
+            //System.out.println(updateSB.toString());
 
             try (PreparedStatement stmt = conn.prepareStatement(updateSB.toString())) {  
                 stmt.setObject(1, id);
@@ -265,10 +282,15 @@ class DataBaseQueryHelper
 
     static void insertChange(DataBase db, String table, String type, long rowId, long epochTimeMs, JSONObject changedRow) throws Exception
     {
-       try (Connection conn = db.getConnection()) {
-            String query = "INSERT INTO changelog (timestamp, tablename, rowid, type) VALUES (?, ?, ?, ?)";
-            long id = -1;
-            try (PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = db.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try {
+                String query = "INSERT INTO changelog (timestamp, tablename, rowid, type) VALUES (?, ?, ?, ?)";
+                long id = -1;
+
+                PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+
                 stmt.setLong(1, epochTimeMs);
                 stmt.setString(2, table);
                 stmt.setLong(3, rowId);
@@ -279,29 +301,33 @@ class DataBaseQueryHelper
                 if (rs.next()) {
                     id = rs.getLong(1);
                 }
-            }
+                
+                if (changedRow != null && id != -1) {
+                    query = "INSERT INTO changes (logid, colname, colvalue) VALUES (?, ?, ?)";
 
-            if (changedRow == null || id == -1) {
-                return;
-            } 
+                    for (String key : changedRow.keySet()) {
+                        if (key.equalsIgnoreCase("id")) {
+                            //Should not be possible
+                            continue;
+                        }
 
-            query = "INSERT INTO changes (logid, colname, colvalue) VALUES (?, ?, ?)";
+                        String newValue = changedRow.get(key).toString();
 
-            for (String key : changedRow.keySet()) {
-                if (key.equalsIgnoreCase("id")) {
-                    //Should not be possible
-                    continue;
+                        PreparedStatement stmt2 = conn.prepareStatement(query);
+                        stmt2.setLong(1, id);
+                        stmt2.setString(2, key);
+                        stmt2.setString(3, newValue);
+                        stmt2.execute();
+                    }
                 }
 
-                String newValue = changedRow.get(key).toString();
-
-                try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                    stmt.setLong(1, id);
-                    stmt.setString(2, key);
-                    stmt.setString(3, newValue);
-                    stmt.execute();
-                }
+                conn.commit();
+            } catch (SQLException | JSONException e) {
+                conn.rollback();
+            } finally {
+                conn.setAutoCommit(true);
             }
+
         }
     }
 
@@ -326,26 +352,47 @@ class DataBaseQueryHelper
         return obj;
     }
 
-    static JSONArray getChangesSince(DataBase db, long epochTimeMs) throws Exception
+    static JSONArray getChangesSince(DataBase db, long afterId) throws Exception
     {
         JSONArray jsonArray = new JSONArray();
 
         try (Connection conn = db.getConnection()) {
-            String query = "SELECT * FROM changelog WHERE timestamp > ?";
+            String query = "SELECT * FROM changelog WHERE id > ?";
 
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setLong(1, epochTimeMs);
+                stmt.setLong(1, afterId);
 
                 ResultSet rs = stmt.executeQuery();
 
                 ResultSetMetaData meta = rs.getMetaData();
                 int columnCount = meta.getColumnCount();
+
+                long prevId = afterId;
+
                 while (rs.next()) {
                     JSONObject obj = new JSONObject();
                     
                     for (int i = 1; i <= columnCount; i++) {
                         obj.put(meta.getColumnLabel(i), rs.getObject(i));
                     }
+                    
+                    //Don't allow gaps in changelog ids
+                    //If there is gap between ids that means
+                    //that there is change that haven't been committed yet
+                    //If we sent newer change to replica, it will think it have replayd
+                    //all changes to later id and it misses change that is currently pending
+
+                    //This is hacky solution
+                    //If for some reason changelog write query failes and rollback is done, it leaves permanent gap
+                    //After permanent gap, it is not possible to sync replicas
+                    //However it should never happen and if it will, we are fucked anyways
+            
+                    long changeId = obj.getLong("id");
+                    if (changeId - prevId > 1) {
+                        break;
+                    }
+                    prevId = changeId;
+
                     jsonArray.put(obj);
                 }
             }

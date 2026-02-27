@@ -74,6 +74,16 @@ public class DataBaseManager
         return clTable;
     }
 
+    private static DataBaseTable getSyncTimeTableDefinition()
+    {
+        DataBaseTable table = new DataBaseTable("lastsync");
+
+        table.addColumn("id",          "BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT");
+        table.addColumn("lastsyncid",  "BIGINT");
+
+        return table;
+    }
+
     private static String getDataBaseName(HospitalNode node)
     {
         int localNodeId = HospitalNetwork.getInstance().getLocalNode().getId();
@@ -113,6 +123,8 @@ public class DataBaseManager
             //They can replay all changes to syncronize replica database
             db.defineTable(getChangeLogTableDefinition(), 0);
             db.defineTable(getChangesTableDefinition(), 0);
+        } else {
+            db.defineTable(getSyncTimeTableDefinition(), 0);
         }
 
         return db;

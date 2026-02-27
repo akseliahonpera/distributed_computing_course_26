@@ -80,25 +80,61 @@ public class RecordSearchFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        record = new Record();
-        recordDataPanel1.updateRecordData(record, patient);
+private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
 
-        try {
-            Result<Record[]> result = RecordService.getInstance().getRecord(record);
-            if (result.isSuccess()) {
-                Record[] records = result.getData();
-                RecordPanel.getInstance().passQueryResults(records);
-                JOptionPane.showMessageDialog(this, "Successfully retrieved " + records.length + " records!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Error retrieving records!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error retrieving records: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+    record = new Record();
+    recordDataPanel1.updateRecordData(record, patient);
 
-    }//GEN-LAST:event_jButton1ActionPerformed
+    // Disable UI while loading
+    jButton1.setEnabled(false);
+    jButton2.setEnabled(false);
+    setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+    RecordService.getInstance()
+            .getRecordAsync(record)
+            .orTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+            .whenComplete((result, ex) -> {
+
+                javax.swing.SwingUtilities.invokeLater(() -> {
+
+                    // Restore UI
+                    setCursor(java.awt.Cursor.getDefaultCursor());
+                    jButton1.setEnabled(true);
+                    jButton2.setEnabled(true);
+
+                    // Network/timeout error
+                    if (ex != null) {
+                        JOptionPane.showMessageDialog(this,
+                                "Request failed: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Success
+                    if (result.isSuccess()) {
+                        Record[] records = result.getData();
+
+                        RecordPanel.getInstance().passQueryResults(records);
+
+                        JOptionPane.showMessageDialog(this,
+                                "Successfully retrieved " + records.length + " records!",
+                                "Success",
+                                JOptionPane.INFORMATION_MESSAGE);
+
+                        dispose();
+                    }
+
+                    // Backend error
+                    else {
+                        JOptionPane.showMessageDialog(this,
+                                result.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            });
+}
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         dispose();

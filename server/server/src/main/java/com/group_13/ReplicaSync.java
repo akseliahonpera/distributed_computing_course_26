@@ -17,17 +17,19 @@ public class ReplicaSync
 
     static class SyncOperation
     {
-        public SyncOperation(String type, String table, long rowId, JSONObject rowValues, long time) {
+        public SyncOperation(String type, String table, long rowId, JSONObject rowValues, long time, long changeId) {
             this.type = type;
             this.table = table;
             this.rowId = rowId;
             this.rowValues = rowValues;
             this.time = time;
+            this.changeId = changeId;
         }
         public String type;
         public String table;
         public long rowId;
         public long time;
+        public long changeId;
         public JSONObject rowValues;
     }
 
@@ -109,15 +111,30 @@ public class ReplicaSync
         return new JSONObject(response.body());
     }
 
-
-    static ArrayList<SyncOperation> fetchChanges(HospitalNode node) throws Exception
+    static long getLastSyncId(DataBase replicaDB) throws Exception
     {
+        long lastChangeLogId = 0;
+        try {
+            lastChangeLogId = DataBaseQueryHelper.queryWithRowId(replicaDB, "lastsync", 1).getJSONObject(0).getLong("lastsyncid");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Creating row for lastsyncid");
+
+            JSONObject syncRow = new JSONObject();
+            syncRow.put("lastsyncid", 0);
+            DataBaseQueryHelper.insert(replicaDB, "lastsync", syncRow);
+        }
+        return lastChangeLogId;
+    }
+
+    static ArrayList<SyncOperation> fetchChanges(HospitalNode node, DataBase replicaDB) throws Exception
+    {
+        long lastChangeLogId = getLastSyncId(replicaDB);
+
         ArrayList<SyncOperation> ops = new ArrayList<>();
 
-        long lastSync = node.getLastSyncTime();
-
         //Query changelog which tells what operations has been made to database
-        JSONArray changes = queryChangesLog(node, lastSync);
+        JSONArray changes = queryChangesLog(node, lastChangeLogId);
 
         if (changes.length() == 0) {
             return null; //Query either failed or there is no changes, no need to update last sync time or do anything
@@ -143,28 +160,25 @@ public class ReplicaSync
             }
 
             //Store database operation
-            ops.add(new SyncOperation(type, table, rowId, rowChanges, time));
+            ops.add(new SyncOperation(type, table, rowId, rowChanges, time, logId));
         }
 
         return ops;
     }
 
 
-    static long replayChanges(HospitalNode node, ArrayList<SyncOperation> ops) throws Exception
+    static long replayChanges(HospitalNode node, ArrayList<SyncOperation> ops, DataBase replicaDB) throws Exception
     {
         int numOfInserts = 0;
         int numOfDeletes = 0;
         int numOfUpdates = 0;
 
-        long latestChangeTime = 0;
-
-        //Get replicate database for node
-        DataBase replicaDB = DataBaseManager.getDataBase(node);
+        long latestChangeId = 0;
 
         //replay database operations
         for (SyncOperation o : ops) {
-            if (o.time > latestChangeTime) {
-                latestChangeTime = o.time;
+            if (o.changeId > latestChangeId) {
+                latestChangeId = o.changeId;
             }
 
             //replay operation
@@ -184,23 +198,24 @@ public class ReplicaSync
                                                                 "  UPDATES: " + Integer.toString(numOfUpdates) +
                                                                 "  DELETES: " + Integer.toString(numOfDeletes));
 
-        return latestChangeTime;
+        return latestChangeId;
     }
 
 
     static void syncReplica(HospitalNode node)
     {
         try {
+            DataBase replicaDB = DataBaseManager.getDataBase(node);
+
             //We want fetch all changes before replaying changes to replica database
             //This avoids desyncronization when connection is lost during sync
-            ArrayList<SyncOperation> ops = fetchChanges(node);
+            ArrayList<SyncOperation> ops = fetchChanges(node, replicaDB);
             if (ops != null && !ops.isEmpty()) { //Only replay if there is changes
-                long latestChangeTime = replayChanges(node, ops);
+                long latestChangeId = replayChanges(node, ops, replicaDB);
 
-                //Lets store last timestamp, which is used at next sync
-                node.setLastSyncTime(latestChangeTime);
-                //Store hospitalnetwork datastructure to disk, because it contains lastsync timestamp
-                HospitalNetwork.getInstance().save();
+                JSONObject updatedRow = new JSONObject();
+                updatedRow.put("lastsyncid", latestChangeId);
+                DataBaseQueryHelper.update(replicaDB, "lastsync", updatedRow, 1);
             }
         } catch (Exception e) {
             System.out.println("Error when syncing replica: " + e.getMessage());

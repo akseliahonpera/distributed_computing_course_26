@@ -1,19 +1,17 @@
 package com.group_13;
 
 public class HospitalNode {
-    public HospitalNode(int id, String name, String address, boolean isReplica, long lastSyncTime) {
+    public HospitalNode(int id, String name, String address, boolean isReplica) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.isReplica = isReplica;
-        this.lastSyncTime = lastSyncTime;
     }
 
     private int id;
     private String name;
     private String address;
     private boolean isReplica;
-    private long lastSyncTime;
 
     public String getName() {
         return name;
@@ -49,8 +47,6 @@ public class HospitalNode {
         sb.append(address);
         sb.append(',');
         sb.append((isReplica ? "true" : "false"));
-        sb.append(',');
-        sb.append(lastSyncTime);
         return sb.toString();
     }
 
@@ -60,8 +56,7 @@ public class HospitalNode {
             return new HospitalNode(Integer.parseInt(parts[0]), 
                                     parts[1], 
                                     parts[2], 
-                                    parts[3].strip().equalsIgnoreCase("true"), 
-                                    Long.parseLong(parts[4].trim()));
+                                    parts[3].strip().equalsIgnoreCase("true"));
 
         } catch (NumberFormatException e) {
             return null;
@@ -74,13 +69,5 @@ public class HospitalNode {
 
     public void setIsReplica(boolean isReplica) {
         this.isReplica = isReplica;
-    }
-
-    public long getLastSyncTime() {
-        return lastSyncTime;
-    }
-
-    public void setLastSyncTime(long lastSyncTime) {
-        this.lastSyncTime = lastSyncTime;
     }
 }
