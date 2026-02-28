@@ -80,4 +80,18 @@ public class TestData
         return object;
     }
 
+    public String generateRandomValue(String varName)
+    {
+        if (stringVars.containsKey(varName)) {
+            ArrayList<String> values = stringVars.get(varName);
+
+            return values.get(rng.nextInt(values.size()));
+        } else if (integerVars.containsKey(varName)) {
+            ArrayList<Integer> bounds = integerVars.get(varName);
+
+            return Integer.toString(rng.nextInt(bounds.get(0), bounds.get(1)));
+        }
+
+        return "";
+    }
 }
