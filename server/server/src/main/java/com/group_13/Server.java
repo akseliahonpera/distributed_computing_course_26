@@ -76,39 +76,18 @@ public class Server {
     }
 
     public static void main(String[] args) throws IOException, Exception {
-
-        System.out.println("Working Directory: " + System.getProperty("user.dir"));
-
+        System.out.println("arg1"+args[0]);
         String configFile = null;
         int serverID = (args.length == 0) ? 0 : Integer.parseInt(args[0]);
+      
 
-        String os_name = System.getProperty("os.name");
-
-        // Testaan ajaa windows ympäristössä useampaa serveriä erillisissä prosesseissa
-        if (os_name.toLowerCase().matches(".*windows.*")) {
-
-            if (serverID < 2) {
-                new ProcessBuilder(
-                        "cmd", "/c", "start", "Server " + (serverID + 1),
-                        "cmd", "/k", "java -jar target\\server-1.0-SNAPSHOT.jar " + (serverID + 1)).start();
-            }
-
-            configFile = String.format("node%d_conf.txt", serverID);
-
-        } else {
-            // Tässä asetukset servulle jos OS joku muu ku windows.
-            configFile = String.format("node%d_conf.txt", serverID);
-        }
-
+        configFile = String.format("node%d_conf.txt", serverID);
+        
         initHospitalNetwork(configFile);
 
         String serverName = HospitalNetwork.getInstance().getLocalNode().getName();
         String fullAddress = HospitalNetwork.getInstance().getLocalNode().getAddress();
         Integer portNumber = Integer.parseInt(fullAddress.split(":")[1]);
-
-        if (os_name.toLowerCase().matches(".*windows.*")) {
-            System.out.print("\033]0;" + ("Server: " + fullAddress + " " + serverName) + "\007");
-        }
 
         System.out.println("Current hospital network:");
         System.out.println(HospitalNetwork.getInstance());
@@ -147,7 +126,7 @@ public class Server {
             server.createContext("/api", new RequestHandler());
             server.setExecutor(Executors.newCachedThreadPool());
 
-            ReplicaSync.startSyncThread();
+            //ReplicaSync.startSyncThread();//handle sync in separate node
 
             server.start();
         } catch (FileNotFoundException e) {

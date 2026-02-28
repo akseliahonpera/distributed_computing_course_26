@@ -20,6 +20,12 @@ public class DataBase {
     private ArrayList<DataBaseTable> tableDefinitions = null;
 
     public DataBase(String dbName, String dbPath, String dbUser, String dbPw) {
+        System.out.println("//==============//");
+        System.out.println(dbName);
+        System.out.println(dbPath);
+        System.out.println(dbUser);
+        System.out.println(dbPw);
+        System.out.println("//==============//");
         try {
             this.dbName = dbName;
             this.dbPath = dbPath;

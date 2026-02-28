@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Server",
+            "request": "launch",
+            "mainClass": "com.group_13_sync_server.Server",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "Server",
+            "request": "launch",
+            "mainClass": "com.group_13.Server",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Client",
             "request": "launch",
             "mainClass": "com.group_13.Client",
