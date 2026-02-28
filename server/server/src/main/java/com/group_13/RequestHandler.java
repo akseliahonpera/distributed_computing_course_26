@@ -90,9 +90,9 @@ public class RequestHandler implements HttpHandler
 
             ServerUtility.sendResponse(t, row.toString(), ServerUtility.HttpStatus.OK);
         } else {
-            long epochTimeMs = Long.parseLong(query.get("since"));
+            long afterId = Long.parseLong(query.get("since"));
             
-            JSONArray changes = DataBaseQueryHelper.getChangesSince(localDB, epochTimeMs);
+            JSONArray changes = DataBaseQueryHelper.getChangesSince(localDB, afterId);
 
             ServerUtility.sendResponse(t, changes.toString(), ServerUtility.HttpStatus.OK);
         }
@@ -105,8 +105,6 @@ public class RequestHandler implements HttpHandler
         String bodyText = ServerUtility.GetBodyText(t);
 
         JSONObject object = new JSONObject(bodyText);
-
-        System.out.println("Bodytext: " + bodyText);
 
         //Records are supposed to owned by same node which owns Patient
         if (object.has("patientid")) {
@@ -197,7 +195,7 @@ public class RequestHandler implements HttpHandler
         if (!t.getRequestMethod().equalsIgnoreCase("POST")) {
             ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
         }
-        System.out.println("Autorisaatiokysely!!!!!!!!!!!!!!!");
+
         String credentialsJSON = ServerUtility.GetBodyText(t);
         JSONObject object = new JSONObject(credentialsJSON);
 
@@ -211,12 +209,8 @@ public class RequestHandler implements HttpHandler
             responseJSON.put("token", token.getTokenStr());
             responseJSON.put("expiration", token.getExpirationTime());
 
-            System.out.println("Credentials ok. Sending response: " + responseJSON.toString());
-
             ServerUtility.sendResponse(t, responseJSON.toString(), ServerUtility.HttpStatus.OK);
         } else {
-            System.out.println("Credentials not ok!!!");
-
             //No token for this client
             ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.UNAUTHORIZED);
         }
@@ -237,13 +231,13 @@ public class RequestHandler implements HttpHandler
             SSLSession session = https.getSSLSession();
             try {
                 //Throws if client didn't present valid certificate
-                String clientDn = session.getPeerPrincipal().getName();
+                session.getPeerPrincipal().getName();
                 
-                System.out.println("New connection with mTLS. ClientDn: " + clientDn);
+                //System.out.println("New connection with mTLS. ClientDn: " + clientDn);
 
                 isMtlsUsed = true;
             } catch (SSLPeerUnverifiedException ignored) {
-                System.out.println("New connection without mTLS. Authorization required!");
+                //System.out.println("New connection without mTLS. Authorization required!");
 
                 isMtlsUsed = false;
             }
@@ -280,11 +274,11 @@ public class RequestHandler implements HttpHandler
                 return;
             }
 
-            String table;
+            String endpoint;
             switch (uri.getPath()) {
-                case "/api/patients" -> table = "patients";
-                case "/api/records" -> table = "records";
-                case "/api/sync" -> table = "sync";
+                case "/api/patients" -> endpoint = "patients";
+                case "/api/records" -> endpoint = "records";
+                case "/api/sync" -> endpoint = "sync";
                 default -> {
                     ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.NOT_FOUND);
                     return;
@@ -293,7 +287,7 @@ public class RequestHandler implements HttpHandler
 
             String method = t.getRequestMethod();
 
-            if (table.equals("sync")) {
+            if (endpoint.equals("sync")) {
                 if (method.equalsIgnoreCase("GET")) {
                     handleSyncRequest(t, query);
                 } else {
@@ -302,13 +296,13 @@ public class RequestHandler implements HttpHandler
                 return;
             }
             if (method.equalsIgnoreCase("POST")) {
-                handlePostRequest(t, query, table);
+                handlePostRequest(t, query, endpoint);
             } else if (method.equalsIgnoreCase("GET")) {
-                handleGetRequest(t, query, table);
+                handleGetRequest(t, query, endpoint);
             } else if (method.equalsIgnoreCase("DELETE")) {
-                handleDeleteRequest(t, query, table);
+                handleDeleteRequest(t, query, endpoint);
             } else if (method.equalsIgnoreCase("PUT")) {
-                handleUpdateRequest(t, query, table);
+                handleUpdateRequest(t, query, endpoint);
             } else {
                 ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.FORBIDDEN);
             }

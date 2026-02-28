@@ -90,21 +90,40 @@ public class PatientCreateFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) throws Exception {//GEN-FIRST:event_jButton1ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         patient = new Patient();
         patientDataPanel1.updatePatientData(patient);
-        try {
-            Result<Patient[]> result = PatientService.getInstance().createPatient(patient);
-            if (result.isSuccess()) {
-                panel.addPatient(result.getData()[0]);     // Refresh patient data in PatientPanel
-                JOptionPane.showMessageDialog(this, "Patient created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to create patient: ", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Exception occurred while creating patient: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+
+        // disable buttons to prevent multiple clicks while waiting for response
+        jButton1.setEnabled(false);
+        jButton2.setEnabled(false);
+        // Set wait cursor while waiting for response
+        setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+        PatientService.getInstance()
+            .createPatientAsync(patient)
+            .orTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+            .whenComplete((result, ex) -> {
+
+                javax.swing.SwingUtilities.invokeLater(() ->{
+
+                    // Restore cursor and buttons
+                    setCursor(java.awt.Cursor.getDefaultCursor());
+                    jButton1.setEnabled(true);
+                    jButton2.setEnabled(true);
+
+                    if (ex != null) {
+                        JOptionPane.showMessageDialog(this, "Error creating patient: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    } else if (result.isSuccess()) {
+                        Patient[] patients = result.getData();
+                        panel.addPatient(patients[0]);
+                        JOptionPane.showMessageDialog(this, "Successfully created patient!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        dispose(); // Close the frame only on success
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Error creating patient: " + result.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+        });
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed

@@ -4,6 +4,9 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,24 +14,28 @@ import org.json.JSONObject;
 public class ReplicaSync
 {
     static long syncIntervalMs = 3000;
-    static Thread syncThread = null;
-    static volatile boolean syncThreadRunning = false;
+    private static Thread syncThread = null;
+    private static volatile boolean syncThreadRunning = false;
+
+    private static final ExecutorService fetchThreadPool = Executors.newFixedThreadPool(64);
 
 
     static class SyncOperation
     {
-        public SyncOperation(String type, String table, long rowId, JSONObject rowValues, long time) {
+        public SyncOperation(String type, String table, long rowId, Future<JSONObject> rowValues, long time, long changeId) {
             this.type = type;
             this.table = table;
             this.rowId = rowId;
             this.rowValues = rowValues;
             this.time = time;
+            this.changeId = changeId;
         }
         public String type;
         public String table;
         public long rowId;
         public long time;
-        public JSONObject rowValues;
+        public long changeId;
+        public Future<JSONObject> rowValues;
     }
 
 
@@ -109,15 +116,30 @@ public class ReplicaSync
         return new JSONObject(response.body());
     }
 
-
-    static ArrayList<SyncOperation> fetchChanges(HospitalNode node) throws Exception
+    static long getLastSyncId(DataBase replicaDB) throws Exception
     {
+        long lastChangeLogId = 0;
+        try {
+            lastChangeLogId = DataBaseQueryHelper.queryWithRowId(replicaDB, "lastsync", 1).getJSONObject(0).getLong("lastsyncid");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Creating row for lastsyncid");
+
+            JSONObject syncRow = new JSONObject();
+            syncRow.put("lastsyncid", 0);
+            DataBaseQueryHelper.insert(replicaDB, "lastsync", syncRow);
+        }
+        return lastChangeLogId;
+    }
+
+    static ArrayList<SyncOperation> fetchChanges(HospitalNode node, DataBase replicaDB) throws Exception
+    {
+        long lastChangeLogId = getLastSyncId(replicaDB);
+
         ArrayList<SyncOperation> ops = new ArrayList<>();
 
-        long lastSync = node.getLastSyncTime();
-
         //Query changelog which tells what operations has been made to database
-        JSONArray changes = queryChangesLog(node, lastSync);
+        JSONArray changes = queryChangesLog(node, lastChangeLogId);
 
         if (changes.length() == 0) {
             return null; //Query either failed or there is no changes, no need to update last sync time or do anything
@@ -133,50 +155,56 @@ public class ReplicaSync
             long rowId = o.getLong("rowid");         //which row in table was modified
             long time = o.getLong("timestamp");      //timestamp when operation was made
 
-            JSONObject rowChanges = null;
+            Future<JSONObject> rowChanges = null;
             if (type.equalsIgnoreCase("INSERT") ||
                 type.equalsIgnoreCase("UPDATE")) {
 
                 //Change was INSERT or UPDATE
                 //Lets query columns values which was inserted/updated
-                rowChanges = queryChanges(node, logId);
+                //Uses futures to increase performance
+                rowChanges = fetchThreadPool.submit(() -> queryChanges(node, logId));
             }
 
             //Store database operation
-            ops.add(new SyncOperation(type, table, rowId, rowChanges, time));
+            ops.add(new SyncOperation(type, table, rowId, rowChanges, time, logId));
         }
 
         return ops;
     }
 
 
-    static long replayChanges(HospitalNode node, ArrayList<SyncOperation> ops) throws Exception
+    static long replayChanges(HospitalNode node, ArrayList<SyncOperation> ops, DataBase replicaDB)
     {
         int numOfInserts = 0;
         int numOfDeletes = 0;
         int numOfUpdates = 0;
 
-        long latestChangeTime = 0;
-
-        //Get replicate database for node
-        DataBase replicaDB = DataBaseManager.getDataBase(node);
+        long latestChangeId = 0;
 
         //replay database operations
         for (SyncOperation o : ops) {
-            if (o.time > latestChangeTime) {
-                latestChangeTime = o.time;
-            }
+            try {
+                //replay operation
+                if (o.type.equalsIgnoreCase("DELETE")) {
+                    DataBaseQueryHelper.delete(replicaDB, o.table, o.rowId);
+                    numOfDeletes += 1;
+                } else if (o.type.equalsIgnoreCase("INSERT")) {
+                    DataBaseQueryHelper.insert(replicaDB, o.table, o.rowValues.get());
+                    numOfInserts += 1;
+                } else if (o.type.equalsIgnoreCase("UPDATE")) {
+                    DataBaseQueryHelper.update(replicaDB, o.table, o.rowValues.get(), o.rowId);
+                    numOfUpdates += 1;
+                }
 
-            //replay operation
-            if (o.type.equalsIgnoreCase("DELETE")) {
-                DataBaseQueryHelper.delete(replicaDB, o.table, o.rowId);
-                numOfDeletes += 1;
-            } else if (o.type.equalsIgnoreCase("INSERT")) {
-                DataBaseQueryHelper.insert(replicaDB, o.table, o.rowValues);
-                numOfInserts += 1;
-            } else if (o.type.equalsIgnoreCase("UPDATE")) {
-                DataBaseQueryHelper.update(replicaDB, o.table, o.rowValues, o.rowId);
-                numOfUpdates += 1;
+                //This is important to be after change is committed to database
+                //If we fail to make change to replica, we don't want advance past that change id
+                //Since rowvalues uses future, it is possible that connection fails mid sync
+                if (o.changeId > latestChangeId) {
+                    latestChangeId = o.changeId;
+                }
+            } catch (Exception e) {
+                System.out.println("Error when syncing.");
+                break;
             }
         }
 
@@ -184,23 +212,24 @@ public class ReplicaSync
                                                                 "  UPDATES: " + Integer.toString(numOfUpdates) +
                                                                 "  DELETES: " + Integer.toString(numOfDeletes));
 
-        return latestChangeTime;
+        return latestChangeId;
     }
 
 
     static void syncReplica(HospitalNode node)
     {
         try {
+            DataBase replicaDB = DataBaseManager.getDataBase(node);
+
             //We want fetch all changes before replaying changes to replica database
             //This avoids desyncronization when connection is lost during sync
-            ArrayList<SyncOperation> ops = fetchChanges(node);
+            ArrayList<SyncOperation> ops = fetchChanges(node, replicaDB);
             if (ops != null && !ops.isEmpty()) { //Only replay if there is changes
-                long latestChangeTime = replayChanges(node, ops);
+                long latestChangeId = replayChanges(node, ops, replicaDB);
 
-                //Lets store last timestamp, which is used at next sync
-                node.setLastSyncTime(latestChangeTime);
-                //Store hospitalnetwork datastructure to disk, because it contains lastsync timestamp
-                HospitalNetwork.getInstance().save();
+                JSONObject updatedRow = new JSONObject();
+                updatedRow.put("lastsyncid", latestChangeId);
+                DataBaseQueryHelper.update(replicaDB, "lastsync", updatedRow, 1);
             }
         } catch (Exception e) {
             System.out.println("Error when syncing replica: " + e.getMessage());

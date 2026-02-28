@@ -68,7 +68,7 @@ public class DataBase {
             config.setUsername(dbUser);
             config.setPassword(dbPw);
 
-            config.setMaximumPoolSize(10);
+            config.setMaximumPoolSize(100);
             config.setMinimumIdle(2);
             config.setConnectionTimeout(30000); // 30s
             config.setIdleTimeout(600000);      // 10 min

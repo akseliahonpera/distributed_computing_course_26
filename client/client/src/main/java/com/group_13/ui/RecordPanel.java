@@ -13,6 +13,8 @@ import javax.swing.JOptionPane;
 import com.group_13.service.RecordService;
 import com.group_13.model.Result;
 
+import java.awt.Cursor;
+
 /**
  *
  * @author JONIK
@@ -63,17 +65,46 @@ public class RecordPanel extends javax.swing.JPanel {
 
     public void showRecordsForPatient(Patient patient) {
         this.patient = patient;
-        try {
-            Result<Record[]> result = RecordService.getInstance().getRecordsByPatientId(patient);
-            if (result.isSuccess()) {
-                table.setRecords(Arrays.asList(result.getData()));
-                System.out.println("Successfully fetched " + result.getData().length + " records for patient: " + patient.getFName() + " " + patient.getLName() + ", ID: " + patient.getId());
-            } else {
-                System.out.println("Error fetching records for patient");
-            }
-        } catch (Exception e) {
-            System.out.println("Error fetching records for patient: " + e.getMessage());
-        }
+
+        // wait cursor & disable buttons
+        getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        jButton1.setEnabled(false);
+        jButton2.setEnabled(false);
+        jButton3.setEnabled(false);
+        jButton4.setEnabled(false);
+
+        RecordService.getInstance()
+                .getRecordsByPatientIdAsync(patient)
+                .orTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                .whenComplete((result, ex) -> {
+
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+
+                        // Restore UI
+                        getRootPane().setCursor(java.awt.Cursor.getDefaultCursor());
+                                jButton1.setEnabled(true);
+                                jButton2.setEnabled(true);
+                                jButton3.setEnabled(true);
+                                jButton4.setEnabled(true);
+
+                        if (ex != null) {
+                            JOptionPane.showMessageDialog(this,
+                                    "Failed to fetch records: " + ex.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        if (result.isSuccess()) {
+                            table.setRecords(Arrays.asList(result.getData()));
+                        } else {
+                            JOptionPane.showMessageDialog(this,
+                                    result.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                });
     }
 
     private void openRecordModifyFrame(Record record, Patient patient) {
@@ -217,9 +248,9 @@ public class RecordPanel extends javax.swing.JPanel {
         });
     }// GEN-LAST:event_jButton2ActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton4ActionPerformed
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {
+
         if (record == null) {
-            // No patient selected
             JOptionPane.showMessageDialog(this,
                     "Please select a record to delete.",
                     "No Selection",
@@ -227,37 +258,72 @@ public class RecordPanel extends javax.swing.JPanel {
             return;
         }
 
+        if (patient == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Patient information missing.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete record of " + patient.getFName() + " " + patient.getLName() + "?",
+                "Are you sure you want to delete record of "
+                        + patient.getFName() + " "
+                        + patient.getLName() + "?",
                 "Confirm Deletion",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            try {
-                Result<Void> result = RecordService.getInstance().deleteRecord(record);
-                if (result.isSuccess()) {
-                    table.deleteRecord(record);
-                    clearSelection();
-                    JOptionPane.showMessageDialog(this,
-                            "Record deleted successfully.",
-                            "Deleted",
-                        JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                            "Failed to delete record",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this,
-                        "Error deleting record: " + e.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
         }
-    }// GEN-LAST:event_jButton4ActionPerformed
+
+        // TODO: what to disable while deleting?
+        // wait cursor
+        getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+        RecordService.getInstance()
+                .deleteRecordAsync(record)
+                .orTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                .whenComplete((result, ex) -> {
+
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+
+                        // Restore cursor
+                        getRootPane().setCursor(java.awt.Cursor.getDefaultCursor());
+
+                        // Timeout / network error
+                        if (ex != null) {
+                            JOptionPane.showMessageDialog(this,
+                                    "Request failed: " + ex.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        // Success
+                        if (result.isSuccess()) {
+
+                            table.deleteRecord(record);
+                            clearSelection();
+                            record = null;
+
+                            JOptionPane.showMessageDialog(this,
+                                    "Record deleted successfully.",
+                                    "Deleted",
+                                    JOptionPane.INFORMATION_MESSAGE);
+
+                        } else {
+
+                            JOptionPane.showMessageDialog(this,
+                                    result.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;

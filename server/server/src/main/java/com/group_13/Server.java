@@ -10,7 +10,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -76,18 +75,52 @@ public class Server {
     }
 
     public static void main(String[] args) throws IOException, Exception {
-        System.out.println("arg1"+args[0]);
-        String configFile = null;
+
+        System.out.println("Working Directory: " + System.getProperty("user.dir"));
+
+        //If we want that single hospital network has multiple server instances,
+        //we can add nosync flag for all but one (which will be responsible of syncing replica databases)
+        boolean doSync = true;
+        for (String arg : args) {
+            if (arg.equalsIgnoreCase("nosync")) {
+                System.out.println("No replica sync!!!");
+                doSync = false;
+            }
+        }
+
+        String configFile = args[0];
+
+        /*String configFile = null;
         int serverID = (args.length == 0) ? 0 : Integer.parseInt(args[0]);
       
 
-        configFile = String.format("node%d_conf.txt", serverID);
-        
+        String os_name = System.getProperty("os.name");
+
+        // Testaan ajaa windows ympäristössä useampaa serveriä erillisissä prosesseissa
+        if (os_name.toLowerCase().matches(".*windows.*")) {
+
+            if (serverID < 2) {
+                new ProcessBuilder(
+                        "cmd", "/c", "start", "Server " + (serverID + 1),
+                        "cmd", "/k", "java -jar target\\server-1.0-SNAPSHOT.jar " + (serverID + 1)).start();
+            }
+
+            configFile = String.format("node%d_conf.txt", serverID);
+
+        } else {
+            // Tässä asetukset servulle jos OS joku muu ku windows.
+            configFile = String.format("node%d_conf.txt", serverID);
+        }*/
+
         initHospitalNetwork(configFile);
 
         String serverName = HospitalNetwork.getInstance().getLocalNode().getName();
         String fullAddress = HospitalNetwork.getInstance().getLocalNode().getAddress();
         Integer portNumber = Integer.parseInt(fullAddress.split(":")[1]);
+
+        /*if (os_name.toLowerCase().matches(".*windows.*")) {
+            System.out.print("\033]0;" + ("Server: " + fullAddress + " " + serverName) + "\007");
+        }*/
 
         System.out.println("Current hospital network:");
         System.out.println(HospitalNetwork.getInstance());
@@ -121,12 +154,12 @@ public class Server {
                 }
             });
 
-            //HttpServer server = HttpServer.create(new InetSocketAddress(portNumber), 0);
-
             server.createContext("/api", new RequestHandler());
             server.setExecutor(Executors.newCachedThreadPool());
 
-            //ReplicaSync.startSyncThread();//handle sync in separate node
+            if (doSync) {
+                ReplicaSync.startSyncThread();
+            }
 
             server.start();
         } catch (FileNotFoundException e) {
