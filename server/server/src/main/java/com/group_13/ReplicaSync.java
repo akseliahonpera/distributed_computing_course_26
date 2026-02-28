@@ -4,6 +4,9 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,13 +14,15 @@ import org.json.JSONObject;
 public class ReplicaSync
 {
     static long syncIntervalMs = 3000;
-    static Thread syncThread = null;
-    static volatile boolean syncThreadRunning = false;
+    private static Thread syncThread = null;
+    private static volatile boolean syncThreadRunning = false;
+
+    private static final ExecutorService fetchThreadPool = Executors.newFixedThreadPool(64);
 
 
     static class SyncOperation
     {
-        public SyncOperation(String type, String table, long rowId, JSONObject rowValues, long time, long changeId) {
+        public SyncOperation(String type, String table, long rowId, Future<JSONObject> rowValues, long time, long changeId) {
             this.type = type;
             this.table = table;
             this.rowId = rowId;
@@ -30,7 +35,7 @@ public class ReplicaSync
         public long rowId;
         public long time;
         public long changeId;
-        public JSONObject rowValues;
+        public Future<JSONObject> rowValues;
     }
 
 
@@ -150,13 +155,14 @@ public class ReplicaSync
             long rowId = o.getLong("rowid");         //which row in table was modified
             long time = o.getLong("timestamp");      //timestamp when operation was made
 
-            JSONObject rowChanges = null;
+            Future<JSONObject> rowChanges = null;
             if (type.equalsIgnoreCase("INSERT") ||
                 type.equalsIgnoreCase("UPDATE")) {
 
                 //Change was INSERT or UPDATE
                 //Lets query columns values which was inserted/updated
-                rowChanges = queryChanges(node, logId);
+                //Uses futures to increase performance
+                rowChanges = fetchThreadPool.submit(() -> queryChanges(node, logId));
             }
 
             //Store database operation
@@ -167,7 +173,7 @@ public class ReplicaSync
     }
 
 
-    static long replayChanges(HospitalNode node, ArrayList<SyncOperation> ops, DataBase replicaDB) throws Exception
+    static long replayChanges(HospitalNode node, ArrayList<SyncOperation> ops, DataBase replicaDB)
     {
         int numOfInserts = 0;
         int numOfDeletes = 0;
@@ -177,20 +183,28 @@ public class ReplicaSync
 
         //replay database operations
         for (SyncOperation o : ops) {
-            if (o.changeId > latestChangeId) {
-                latestChangeId = o.changeId;
-            }
+            try {
+                //replay operation
+                if (o.type.equalsIgnoreCase("DELETE")) {
+                    DataBaseQueryHelper.delete(replicaDB, o.table, o.rowId);
+                    numOfDeletes += 1;
+                } else if (o.type.equalsIgnoreCase("INSERT")) {
+                    DataBaseQueryHelper.insert(replicaDB, o.table, o.rowValues.get());
+                    numOfInserts += 1;
+                } else if (o.type.equalsIgnoreCase("UPDATE")) {
+                    DataBaseQueryHelper.update(replicaDB, o.table, o.rowValues.get(), o.rowId);
+                    numOfUpdates += 1;
+                }
 
-            //replay operation
-            if (o.type.equalsIgnoreCase("DELETE")) {
-                DataBaseQueryHelper.delete(replicaDB, o.table, o.rowId);
-                numOfDeletes += 1;
-            } else if (o.type.equalsIgnoreCase("INSERT")) {
-                DataBaseQueryHelper.insert(replicaDB, o.table, o.rowValues);
-                numOfInserts += 1;
-            } else if (o.type.equalsIgnoreCase("UPDATE")) {
-                DataBaseQueryHelper.update(replicaDB, o.table, o.rowValues, o.rowId);
-                numOfUpdates += 1;
+                //This is important to be after change is committed to database
+                //If we fail to make change to replica, we don't want advance past that change id
+                //Since rowvalues uses future, it is possible that connection fails mid sync
+                if (o.changeId > latestChangeId) {
+                    latestChangeId = o.changeId;
+                }
+            } catch (Exception e) {
+                System.out.println("Error when syncing.");
+                break;
             }
         }
 

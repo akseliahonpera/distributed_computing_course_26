@@ -2,10 +2,14 @@ package com.group_13;
 
 import java.io.FileInputStream;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -18,6 +22,18 @@ public class ApiClient
     private HttpClient client = null;
     private String authToken = null;
     private String host = null;
+
+
+    public static String encodeParams(Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            return "";
+        }
+
+        return params.entrySet()
+            .stream()
+            .map(e -> URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8) + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+            .collect(Collectors.joining("&"));
+    }
 
     private SSLContext getSSLContext(String trustoreFile, char[] password) throws Exception
     {
@@ -112,11 +128,60 @@ public class ApiClient
         return result.getJSONObject(0);
     }
 
-    public void delete(long id) {
+    public JSONArray query(String table, Map<String,String> params) throws Exception
+    {
+        String fullUrl = host + "/api/" + table;
 
+        if (params != null && !params.keySet().isEmpty()) {
+            fullUrl = fullUrl + "?" + encodeParams(params);
+        }
+
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl))
+                                                      .header("Authorization", "Bearer " + authToken)
+                                                      .GET()
+                                                      .build();
+
+        HttpResponse<String> response = client.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
+
+        return new JSONArray(response.body());
     }
 
-    public JSONObject update(JSONObject o, long id, String endpoint) {
-        return null;
+    public void delete(long id, String table) throws Exception {
+        String fullUrl = host + "/api/" + table + "?id=" + Long.toString(id);
+
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl))
+                                                      .header("Authorization", "Bearer " + authToken)
+                                                      .DELETE()
+                                                      .build();
+
+        HttpResponse<String> response = client.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
+
+        if (response.statusCode() != 200) {
+            System.out.println("Delete failed!");
+        }
+    }
+
+    public JSONObject update(JSONObject o, long id, String table) throws Exception {
+        String fullUrl = host + "/api/" + table + "?id=" + Long.toString(id);
+
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl))
+                                                      .header("Authorization", "Bearer " + authToken)
+                                                      .PUT(HttpRequest.BodyPublishers.ofString(o.toString()))
+                                                      .build();
+
+        HttpResponse<String> response = client.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+        );
+
+        JSONArray result = new JSONArray(response.body());
+
+        return result.getJSONObject(0);
     }
 }

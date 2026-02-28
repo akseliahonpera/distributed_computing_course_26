@@ -231,13 +231,13 @@ public class RequestHandler implements HttpHandler
             SSLSession session = https.getSSLSession();
             try {
                 //Throws if client didn't present valid certificate
-                String clientDn = session.getPeerPrincipal().getName();
+                session.getPeerPrincipal().getName();
                 
-                System.out.println("New connection with mTLS. ClientDn: " + clientDn);
+                //System.out.println("New connection with mTLS. ClientDn: " + clientDn);
 
                 isMtlsUsed = true;
             } catch (SSLPeerUnverifiedException ignored) {
-                System.out.println("New connection without mTLS. Authorization required!");
+                //System.out.println("New connection without mTLS. Authorization required!");
 
                 isMtlsUsed = false;
             }

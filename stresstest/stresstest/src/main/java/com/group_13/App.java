@@ -67,7 +67,7 @@ public class App
             
             ApiClient client = new ApiClient("DS26oulu:8001", "root", "root");
             
-            multiThreadedInsert(client, patientData, "patients", 1000, 250);
+            multiThreadedInsert(client, patientData, "patients", 10000, 250);
 
 
         } catch (Exception e) {
