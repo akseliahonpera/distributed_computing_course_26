@@ -1,0 +1,3 @@
+0,oulu,syncserveroulu:8050,false,0
+1,tampere,syncservertampere:8051,false,0
+2,helsinki,syncserverhelsinki:8052,false,0
