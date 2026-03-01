@@ -179,18 +179,106 @@ public class App
     }
 
 
-    private static ArrayList<Long> getIds(ApiClient client, String table) throws Exception
+    private static ArrayList<Long> getIds(ApiClient client, String table, long prefixFilter) throws Exception
     {
         ArrayList<Long> ids = new ArrayList<>();
         
         JSONArray array = client.query(table, null);
         for (int i = 0; i < array.length(); i++) {
-            ids.add(array.getJSONObject(i).getLong("id"));
+            long id = array.getJSONObject(i).getLong("id");
+
+            long prefix = (id >> 48) & 0xFFFF;
+            if (prefix == prefixFilter) {
+                ids.add(id);
+            }
         }
         System.out.println("Found " + Integer.toString(ids.size()) + " IDs from table " + table);
         return ids;
     }
 
+
+
+    private static void testQueryByIdLatency(ApiClient client, TestData data, ArrayList<Long> ids, String table) throws Exception
+    {
+        long t0 = Instant.now().toEpochMilli();
+
+        queryByIdTest(client, ids, table, 100);
+
+        long t1 = Instant.now().toEpochMilli();
+
+        float avgLatency = (float)(t1 - t0) / 100;
+        
+        System.out.println("Average query by ID latency: " + Float.toString(avgLatency) + "ms\n");
+    }
+
+    private static void testQueryByNameLatency(ApiClient client, TestData data) throws Exception
+    {
+        long t0 = Instant.now().toEpochMilli();
+
+        queryByNameTest(client, data, 100);
+
+        long t1 = Instant.now().toEpochMilli();
+
+        float avgLatency = (float)(t1 - t0) / 100;
+        
+        System.out.println("Average query by name latency: " + Float.toString(avgLatency) + "ms\n");
+    }
+
+    private static void testInsertLatency(ApiClient client, TestData data, String table) throws Exception
+    {
+        long t0 = Instant.now().toEpochMilli();
+
+        insertTest(client, data, table, 100);
+
+        long t1 = Instant.now().toEpochMilli();
+
+        float avgLatency = (float)(t1 - t0) / 100;
+        
+        System.out.println("Average insert latency: " + Float.toString(avgLatency) + "ms\n");
+    }
+
+    private static void testUpdateLatency(ApiClient client, TestData data, ArrayList<Long> ids, String table) throws Exception
+    {
+        long t0 = Instant.now().toEpochMilli();
+
+        updateTest(client, ids, data, table, 100);
+
+        long t1 = Instant.now().toEpochMilli();
+
+        float avgLatency = (float)(t1 - t0) / 100;
+        
+        System.out.println("Average update latency: " + Float.toString(avgLatency) + "ms\n");
+    }
+
+
+
+    private static void runThroughputTests(ApiClient client, TestData data) throws Exception
+    {
+        multiThreadedInsert(client, data, "patients", 10000, 250);
+
+        ArrayList<Long> ids = getIds(client, "patients", 0);
+
+        multiThreadedUpdate(client, data, ids, "patients", 10000, 250);
+        multiThreadedQueryById(client, ids, "patients", 10000, 250);
+        multiThreadedQueryByName(client, data, 1000, 90);
+    }
+
+    private static void runLatencyTests(ApiClient client, ApiClient otherClient, TestData data) throws Exception
+    {
+        insertTest(client, data, "patients", 100);      //These makes sure that database is not empty
+        insertTest(otherClient, data, "patients", 100);
+        
+        ArrayList<Long> ids = getIds(client, "patients", 0);
+        ArrayList<Long> otherIds = getIds(otherClient, "patients", 1);
+
+        testQueryByIdLatency(client, data, ids, "patients");
+        testQueryByNameLatency(client, data);
+        testInsertLatency(client, data, "patients");
+        testUpdateLatency(client, data, ids, "patients");
+
+        System.out.println("Testing update latency when IDs are owned by other node (updates are forwarded)");
+        testUpdateLatency(client, data, otherIds, "patients");
+    }
 
     public static void main( String[] args ) throws Exception
     {
@@ -205,19 +293,11 @@ public class App
             patientData.addIntegerVariable("phone", 1000000, 9999999);
             patientData.addIntegerVariable("emergencycontact", 1000000, 9999999);
 
-            TestData recordData = new TestData();
-            recordData.addStringVariable("operation", "operations.txt");
-            recordData.addStringVariable("responsible", "responsibles.txt");
-
-            
             ApiClient client = new ApiClient("DS26oulu:8001", "root", "root");
-            
-            ArrayList<Long> ids = getIds(client, "patients");
+            ApiClient otherClient = new ApiClient("DS26tampere:8002", "root", "root");
 
-            multiThreadedInsert(client, patientData, "patients", 10000, 250);
-            multiThreadedUpdate(client, patientData, ids, "patients", 10000, 250);
-            multiThreadedQueryById(client, ids, "patients", 10000, 250);
-            multiThreadedQueryByName(client, patientData, 1000, 90);
+            //runThroughputTests(client, patientData);
+            runLatencyTests(client, otherClient, patientData);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
