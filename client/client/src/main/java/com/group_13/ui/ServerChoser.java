@@ -109,9 +109,4 @@ public class ServerChoser extends JDialog {
         return hosts.get(serverIndex).getUrl();
     }
 
-    public static void main(String args[]) {
-        ServerChoser.getInstance().askServer();
-        System.out.println(ServerChoser.getInstance().getServerAddress());
-    }
-
 }

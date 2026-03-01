@@ -8,7 +8,8 @@ import com.group_13.model.Record;
 import com.group_13.model.Patient;
 
 /**
- *
+ * A helper panel for displaying and editing record information. Contains text fields for record's fields and methods for setting and updating record data.
+ * Used in RecordCreateFrame, RecordSearchFrame and RecordModifyFrame
  * @author JONIK
  */
 public class RecordDataPanel extends javax.swing.JPanel {

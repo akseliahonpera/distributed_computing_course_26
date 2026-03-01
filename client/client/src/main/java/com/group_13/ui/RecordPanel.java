@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package com.group_13.ui;
 
 import java.util.*;
@@ -10,13 +6,21 @@ import com.group_13.model.Patient;
 import com.group_13.model.RecordTable;
 import javax.swing.JOptionPane;
 
+import org.w3c.dom.events.MouseEvent;
+
 import com.group_13.service.RecordService;
 import com.group_13.model.Result;
 
 import java.awt.Cursor;
 
 /**
- *
+ * A panel for displaying records of a selected patient. Contains a JTable for
+ * displaying records and buttons for creating, modifying, deleting and
+ * searching records.
+ * Is notified by the MainFrame when the selected patient changes and updates
+ * the displayed records accordingly by calling RecordService to fetch records
+ * for the selected patient.
+ * 
  * @author JONIK
  */
 public class RecordPanel extends javax.swing.JPanel {
@@ -25,39 +29,26 @@ public class RecordPanel extends javax.swing.JPanel {
     private Patient patient; // Store selected patient
     private Record record; // Store selected record
 
-    private static RecordPanel INSTANCE;
-
-    public static synchronized RecordPanel getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new RecordPanel();
-        }
-        return INSTANCE;
-    }
-
     /**
      * Creates new form RecordPanel
      */
-    private RecordPanel() {
+    public RecordPanel() {
         initComponents();
         jTable1.setModel(table);
 
         jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 2 && jTable1.getSelectedRow() != -1) {
-                    int row = jTable1.getSelectedRow();
-                    record = table.getRecord(row);
-                    openRecordModifyFrame(record, patient);
-                }
-            }
-        });
+                // If single click, select record.
+                int row = jTable1.getSelectedRow();
+                if (row == -1)
+                    return;
 
-        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 1 && jTable1.getSelectedRow() != -1) {
-                    int row = jTable1.getSelectedRow();
-                    record = table.getRecord(row);
+                record = table.getRecord(row);
+
+                // If double click, open modify frame for the selected record.
+                if (evt.getClickCount() == 2) {
+                    openRecordModifyFrame(record, patient);
                 }
             }
         });
@@ -82,10 +73,10 @@ public class RecordPanel extends javax.swing.JPanel {
 
                         // Restore UI
                         getRootPane().setCursor(java.awt.Cursor.getDefaultCursor());
-                                jButton1.setEnabled(true);
-                                jButton2.setEnabled(true);
-                                jButton3.setEnabled(true);
-                                jButton4.setEnabled(true);
+                        jButton1.setEnabled(true);
+                        jButton2.setEnabled(true);
+                        jButton3.setEnabled(true);
+                        jButton4.setEnabled(true);
 
                         if (ex != null) {
                             JOptionPane.showMessageDialog(this,
@@ -226,8 +217,17 @@ public class RecordPanel extends javax.swing.JPanel {
     }// GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
+        if (patient == null) {
+            // no patient selected
+            JOptionPane.showMessageDialog(this,
+                    "Please select a patient for whom to search records.",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         javax.swing.SwingUtilities.invokeLater(() -> {
-            RecordSearchFrame frame = new RecordSearchFrame(patient);
+            RecordSearchFrame frame = new RecordSearchFrame(this, patient);
             frame.setVisible(true);
         });
     }// GEN-LAST:event_jButton1ActionPerformed
@@ -279,9 +279,12 @@ public class RecordPanel extends javax.swing.JPanel {
             return;
         }
 
-        // TODO: what to disable while deleting?
-        // wait cursor
+        // wait cursor und disable buttons
         getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        jButton1.setEnabled(false);
+        jButton2.setEnabled(false);
+        jButton3.setEnabled(false);
+        jButton4.setEnabled(false);
 
         RecordService.getInstance()
                 .deleteRecordAsync(record)
@@ -290,8 +293,12 @@ public class RecordPanel extends javax.swing.JPanel {
 
                     javax.swing.SwingUtilities.invokeLater(() -> {
 
-                        // Restore cursor
+                        // Restore cursor and buttons
                         getRootPane().setCursor(java.awt.Cursor.getDefaultCursor());
+                        jButton1.setEnabled(true);
+                        jButton2.setEnabled(true);
+                        jButton3.setEnabled(true);
+                        jButton4.setEnabled(true);
 
                         // Timeout / network error
                         if (ex != null) {

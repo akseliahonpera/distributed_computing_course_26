@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package com.group_13.ui;
 
 import javax.swing.JFrame;
@@ -12,7 +8,8 @@ import com.group_13.service.RecordService;
 import com.group_13.model.Patient;
 import com.group_13.model.Result;
 /**
- *
+ * A frame for creating a new patient. Contains a PatientDataPanel for entering patient information and buttons for creating the patient or canceling the operation.
+ * Calls PatientService to create the patient and updates the PatientPanel with the new patient on success.
  * @author JONIK
  */
 public class PatientCreateFrame extends javax.swing.JFrame {

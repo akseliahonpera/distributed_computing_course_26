@@ -7,9 +7,14 @@ package com.group_13.ui;
 import com.group_13.model.Patient;
 
 /**
- *
+ * A helper panel for displaying and editing patient information. Contains text fields for patient's fields and methods for setting and updating patient data.
+ * Used in PatientCreateFrame, PatientSearchFrame and PatientModifyFrame
  * @author JONIK
  */
+
+// NOTE: I originally intended for the data fields to be inherited from a common superclass, but due to Netbeans GUI builder limitations
+// I had to duplicate the code in PatientDataPanel and RecordDataPanel.
+
 public class PatientDataPanel extends javax.swing.JPanel {
 
     /**

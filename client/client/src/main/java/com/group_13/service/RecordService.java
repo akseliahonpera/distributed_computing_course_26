@@ -13,6 +13,12 @@ import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Singleton service class for handling record related operations.
+ * Manages fetching, creating, updating, and deleting medical records.
+ * Works with RecordAPI to perform API calls related to medical record management.
+ */
+
 public class RecordService {
     private static final RecordService INSTANCE = new RecordService();
     private final RecordAPI recordAPI = RecordAPI.getInstance();
