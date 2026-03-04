@@ -260,7 +260,7 @@ public class App
 
         multiThreadedUpdate(client, data, ids, "patients", 10000, 250);
         multiThreadedQueryById(client, ids, "patients", 10000, 250);
-        multiThreadedQueryByName(client, data, 1000, 90);
+        multiThreadedQueryByName(client, data, 10000, 250);
     }
 
     private static void runLatencyTests(ApiClient client, ApiClient otherClient, TestData data) throws Exception
@@ -296,7 +296,7 @@ public class App
             ApiClient client = new ApiClient("DS26oulu:8001", "root", "root");
             ApiClient otherClient = new ApiClient("DS26tampere:8002", "root", "root");
 
-            //runThroughputTests(client, patientData);
+            runThroughputTests(client, patientData);
             runLatencyTests(client, otherClient, patientData);
         } catch (Exception e) {
             System.out.println(e.getMessage());

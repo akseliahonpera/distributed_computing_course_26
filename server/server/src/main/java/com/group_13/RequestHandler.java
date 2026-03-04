@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
@@ -106,17 +107,6 @@ public class RequestHandler implements HttpHandler
 
         JSONObject object = new JSONObject(bodyText);
 
-        //Records are supposed to owned by same node which owns Patient
-        if (object.has("patientid")) {
-            //Check if we own Patient
-            //If we don't, forward request to owner node
-            long id = object.getLong("patientid");
-            if (HospitalNetwork.getInstance().getNodeByRowId(id).isReplica()) {
-                forwardRequest(HospitalNetwork.getInstance().getNodeByRowId(id), t, bodyText, query, table, "INSERT");
-                return;
-            }
-        }
-
         long newRowId = DataBaseQueryHelper.insert(DataBaseManager.getOwnDataBase(), table, object);
 
         JSONArray newRowJson = DataBaseQueryHelper.queryWithRowId(DataBaseManager.getOwnDataBase(), table, newRowId);
@@ -154,10 +144,28 @@ public class RequestHandler implements HttpHandler
             return;
         }
 
-        DataBaseQueryHelper.delete(DataBaseManager.getOwnDataBase(), table, id);
+        DataBase ownDB = DataBaseManager.getOwnDataBase();
+
+        DataBaseQueryHelper.delete(ownDB, table, id);
 
         //Store this delete operation to changelog
         storeDataBaseChange(table, "DELETE", id, null, null);
+
+        //When we deleted patient, lets find all records belonging to that patient
+        //And delete them also
+        if (table.equals("patients")) {
+            TreeMap<String, String> query2 = new TreeMap<>();
+            query2.put("patientid", Long.toString(id));
+            JSONArray records = DataBaseQueryHelper.query(ownDB, "records", query2);
+
+            for (int i = 0; i < records.length(); i++) {
+                long rId = records.getJSONObject(i).getLong("id");
+                
+                DataBaseQueryHelper.delete(ownDB, "records", rId);
+
+                storeDataBaseChange("records", "DELETE", rId, null, null);
+            }
+        }
 
         ServerUtility.sendResponse(t, "", ServerUtility.HttpStatus.OK);
     }

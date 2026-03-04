@@ -52,7 +52,7 @@ class DataBaseQueryHelper
             }
             querySB.append(key);
 
-            if (like) {
+            if (like && !key.endsWith("id")) {
                 querySB.append(" LIKE ?");
                 values.add("%" + params.get(key) + "%");
             } else {
@@ -102,6 +102,9 @@ class DataBaseQueryHelper
         for (int b = 0; b < 2; b++) {
             boolean like = (b > 0);
             try (Connection conn = db.getConnection(); PreparedStatement stmt = buildQuery(conn, tableName, params, like)) {
+
+                //System.out.println(stmt.toString());
+
                 ResultSet rs = stmt.executeQuery();
                 ResultSetMetaData meta = rs.getMetaData();
                 int columnCount = meta.getColumnCount();

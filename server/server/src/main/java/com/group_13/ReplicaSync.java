@@ -3,7 +3,9 @@ package com.group_13;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -172,6 +174,26 @@ public class ReplicaSync
         return ops;
     }
 
+    static void cascadePatientDelete(long patientId)
+    {
+        try {
+            DataBase ownDB = DataBaseManager.getOwnDataBase();
+
+            TreeMap<String, String> query = new TreeMap<>();
+            query.put("patientid", Long.toString(patientId));
+            JSONArray records = DataBaseQueryHelper.query(ownDB, "records", query);
+
+            for (int i = 0; i < records.length(); i++) {
+                long rId = records.getJSONObject(i).getLong("id");
+                
+                DataBaseQueryHelper.delete(ownDB, "records", rId);
+                DataBaseQueryHelper.insertChange(ownDB, "records", "DELETE", rId, Instant.now().toEpochMilli(), null);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error running cascade delete for Patient records");
+        }
+    }
 
     static long replayChanges(HospitalNode node, ArrayList<SyncOperation> ops, DataBase replicaDB)
     {
@@ -187,6 +209,11 @@ public class ReplicaSync
                 //replay operation
                 if (o.type.equalsIgnoreCase("DELETE")) {
                     DataBaseQueryHelper.delete(replicaDB, o.table, o.rowId);
+
+                    if (o.table.equals("patients")) {
+                        cascadePatientDelete(o.rowId);
+                    }
+
                     numOfDeletes += 1;
                 } else if (o.type.equalsIgnoreCase("INSERT")) {
                     DataBaseQueryHelper.insert(replicaDB, o.table, o.rowValues.get());
@@ -223,6 +250,9 @@ public class ReplicaSync
 
             //We want fetch all changes before replaying changes to replica database
             //This avoids desyncronization when connection is lost during sync
+
+            long syncStartTime = Instant.now().toEpochMilli();
+
             ArrayList<SyncOperation> ops = fetchChanges(node, replicaDB);
             if (ops != null && !ops.isEmpty()) { //Only replay if there is changes
                 long latestChangeId = replayChanges(node, ops, replicaDB);
@@ -230,6 +260,10 @@ public class ReplicaSync
                 JSONObject updatedRow = new JSONObject();
                 updatedRow.put("lastsyncid", latestChangeId);
                 DataBaseQueryHelper.update(replicaDB, "lastsync", updatedRow, 1);
+
+                long syncDuration = Instant.now().toEpochMilli() - syncStartTime;
+
+                System.out.println("Sync time: " + Long.toString(syncDuration) + "ms");
             }
         } catch (Exception e) {
             System.out.println("Error when syncing replica: " + e.getMessage());
