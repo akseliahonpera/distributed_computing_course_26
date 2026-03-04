@@ -11,8 +11,6 @@ public class Host {
     String hostNumber = null;//retard alert
     String hostPlace = null;
     boolean ownLocal = false;
-
-
     
     public Host(String confLine){
         parseLine(confLine);
@@ -21,7 +19,7 @@ public class Host {
 
     private void setUrl(){
         this.url = prefix+bigdix+":"+smalltits+midfix;
-        //System.out.println(this.url);
+        System.out.println(this.url);
     }
 
     public String getUrl(){

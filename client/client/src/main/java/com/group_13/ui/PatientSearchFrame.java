@@ -14,7 +14,8 @@ import com.group_13.service.PatientService;
 import com.group_13.service.RecordService;
 
 /**
- *
+ * A frame for searching patients. Contains a PatientDataPanel for entering search criteria and buttons for applying the filter or canceling the operation.
+ * Calls PatientService to search for patients and updates the PatientPanel with the results on success.
  * @author JONIK
  */
 public class PatientSearchFrame extends javax.swing.JFrame {
@@ -26,12 +27,12 @@ public class PatientSearchFrame extends javax.swing.JFrame {
     /**
      * Creates new form PatientSearchFrame
      */
-    public PatientSearchFrame() {
+    public PatientSearchFrame(PatientPanel patientPanel) {
         initComponents();
         setTitle("Patient search");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        patientPanel = PatientPanel.getInstance();
+        this.patientPanel = patientPanel;
     }
 
     /**
@@ -119,7 +120,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
                     if (result.isSuccess()) {
                         Patient[] patients = result.getData();
 
-                        PatientPanel.getInstance().passQueryResults(patients);
+                        patientPanel.passQueryResults(patients);
 
                         JOptionPane.showMessageDialog(this,
                                 "Successfully retrieved " + patients.length + " patients!",

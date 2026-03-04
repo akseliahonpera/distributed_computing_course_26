@@ -10,52 +10,32 @@ import javax.swing.table.AbstractTableModel;
 import com.group_13.model.Record;
 
 /**
- *
+ * A table model for displaying medical record information in a JTable.
  * @author JONIK
  */
+
 public class RecordTable extends AbstractTableModel {
 
-    private List<Record> allRecords = new ArrayList<>();
-    private List<Record> visibleRecords = new ArrayList<>();
+    private List<Record> records = new ArrayList<>();
 
     private final String[] columns = {
             "ID", "Datetime", "Responsible"
     };
 
     public void setRecords(List<Record> list) {
-        allRecords = new ArrayList<>(list);
-        visibleRecords = new ArrayList<>(list);
+        records = new ArrayList<>(list);
         fireTableDataChanged();
     }
 
     public void deleteRecord(Record record) {
-        allRecords.remove(record);
-        visibleRecords.remove(record);
-        fireTableDataChanged();
-    }
-
-    public void showRecordsForPatient(String patientId) {
-
-        visibleRecords.clear();
-
-        for (Record r : allRecords) {
-            if (r.getPatientid().equals(patientId)) {
-                visibleRecords.add(r);
-            }
-        }
+        records.remove(record);
         fireTableDataChanged();
     }
 
     public void updateRecord(Record updatedRecord) {
-        for (int i = 0; i < visibleRecords.size(); i++) {
-            if (visibleRecords.get(i).getId().equals(updatedRecord.getId())) {
-                visibleRecords.set(i, updatedRecord);
-                for (int j = 0; j < allRecords.size(); j++) {
-                    if (allRecords.get(j).getId().equals(updatedRecord.getId())) {
-                        allRecords.set(j, updatedRecord);
-                        break;
-                    }
-                }
+        for (int i = 0; i < records.size(); i++) {
+            if (records.get(i).getId().equals(updatedRecord.getId())) {
+                records.set(i, updatedRecord);
                 fireTableRowsUpdated(i, i);
                 return;
             }
@@ -63,22 +43,21 @@ public class RecordTable extends AbstractTableModel {
     }
 
     public void addRecord(Record record) {
-        allRecords.add(record);
-        visibleRecords.add(record);
+        records.add(record);
         fireTableDataChanged();
     }
 
     public Record getRecord(int row) {
-        return visibleRecords.get(row);
+        return records.get(row);
     }
 
     public List<Record> getAllRecords() {
-        return visibleRecords;
+        return records;
     }
 
     @Override
     public int getRowCount() {
-        return visibleRecords.size();
+        return records.size();
     }
 
     @Override
@@ -93,7 +72,7 @@ public class RecordTable extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int col) {
-        Record r = visibleRecords.get(row);
+        Record r = records.get(row);
 
         return switch (col) {
             case 0 -> r.getId();

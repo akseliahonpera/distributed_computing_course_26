@@ -13,6 +13,8 @@ import com.group_13.model.ApiResponse;
  * Implements methods for user login and logout and token handling.
  */
 
+// NOTE: Contrary to the patient/record APIs, the authorization API is not implemented asynchronously.
+
 public class AuthAPI extends BaseAPI {
     private static final AuthAPI INSTANCE = new AuthAPI();
     private static final String AUTH_ENDPOINT = BASE_URL + "/auth/token";

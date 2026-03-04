@@ -12,28 +12,24 @@ import com.group_13.service.PatientService;
 import javax.swing.JOptionPane;
 
 /**
- *
+ * A panel for displaying and managing patients. Contains a JTable for listing
+ * patients and buttons for creating, searching, modifying and deleting
+ * patients.
+ * Listens to patient selection changes and notifies a PatientSelectionListener
+ * about the selected patient.
+ * 
  * @author JONIK
  */
 public class PatientPanel extends javax.swing.JPanel {
 
-    private PatientTable table = new PatientTable(); // placeholder
+    private PatientTable table = new PatientTable();
     private Patient patient;
     private PatientSelectionListener listener;
-
-    private static PatientPanel INSTANCE;
-
-    public static synchronized PatientPanel getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new PatientPanel();
-        }
-        return INSTANCE;
-    }
 
     /**
      * Creates new form PatientPanel
      */
-    private PatientPanel() {
+    public PatientPanel() {
         initComponents();
         jTable1.setModel(table);
         // loadTestData();
@@ -190,7 +186,7 @@ public class PatientPanel extends javax.swing.JPanel {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
         javax.swing.SwingUtilities.invokeLater(() -> {
-            PatientSearchFrame frame = new PatientSearchFrame();
+            PatientSearchFrame frame = new PatientSearchFrame(this);
             frame.setVisible(true);
         });
     }// GEN-LAST:event_jButton1ActionPerformed
@@ -242,9 +238,12 @@ public class PatientPanel extends javax.swing.JPanel {
             return;
         }
 
-        // TODO: What to disable while deleting?
-        // Wait cursor
+        // Wait cursor & disable buttons while waiting for response
         getRootPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        jButton1.setEnabled(false);
+        jButton2.setEnabled(false);
+        jButton3.setEnabled(false);
+        jButton4.setEnabled(false);
 
         PatientService.getInstance()
                 .deletePatientAsync(patient)
@@ -253,8 +252,12 @@ public class PatientPanel extends javax.swing.JPanel {
 
                     javax.swing.SwingUtilities.invokeLater(() -> {
 
-                        // Restore cursor
+                        // Restore cursor & buttons
                         getRootPane().setCursor(java.awt.Cursor.getDefaultCursor());
+                        jButton1.setEnabled(true);
+                        jButton2.setEnabled(true);
+                        jButton3.setEnabled(true);
+                        jButton4.setEnabled(true);
 
                         // Timeout / network error
                         if (ex != null) {
@@ -276,7 +279,7 @@ public class PatientPanel extends javax.swing.JPanel {
                             table.deletePatient(patient);
                             patient = null;
 
-                        // Backend error
+                            // Backend error
                         } else {
                             JOptionPane.showMessageDialog(this,
                                     result.getMessage(),

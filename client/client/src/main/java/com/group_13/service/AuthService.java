@@ -8,6 +8,14 @@ import org.json.JSONObject;
 
 import com.group_13.model.Result;
 
+/**
+ * Singleton service class for handling authentication logic.
+ * Manages user login, logout, and token storage.
+ * Works with AuthAPI to perform API calls related to authentication.
+ */
+
+// NOTE: Contrary to the patient/record APIs, the authorization API is not implemented asynchronously.
+
 public class AuthService {
     private static final AuthService INSTANCE = new AuthService();
     private final AuthAPI authAPI = AuthAPI.getInstance();

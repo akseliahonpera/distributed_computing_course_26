@@ -22,13 +22,8 @@ import com.group_13.service.AuthService;
  * Contains common configurations BASE_URL and HttpClient instance.
  */
 
-
-
-
 public abstract class BaseAPI {
-    protected static String BASE_URL = ""; // SET URL HERE
-    
-
+    protected static String BASE_URL;
 
     public static final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10))
             .sslContext(getSslContext())

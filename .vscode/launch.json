@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ServerChoser",
+            "request": "launch",
+            "mainClass": "com.group_13.ui.ServerChoser",
+            "projectName": "client"
+        },
+        {
+            "type": "java",
             "name": "Server",
             "request": "launch",
             "mainClass": "com.group_13_sync_server.Server",

@@ -12,7 +12,9 @@ import com.group_13.service.RecordService;
 import com.group_13.model.Result;
 
 /**
- *
+ * A frame for searching records. Contains a RecordDataPanel for entering search criteria and buttons for applying the filter or canceling the operation.
+ * Calls RecordService to search for records matching the criteria and updates the RecordPanel with the results on success.
+ * Needs the patient to associate the search with, which is passed in the constructor and used to pre-fill the patientID field in the RecordDataPanel.
  * @author JONIK
  */
 public class RecordSearchFrame extends javax.swing.JFrame {
@@ -20,11 +22,13 @@ public class RecordSearchFrame extends javax.swing.JFrame {
     // NOTE: need to pass selected patient also to be able to fill the patientid into the form
     private Record record;
     private Patient patient;
+    private RecordPanel recordPanel;
     /**
      * Creates new form RecordSerchFrame
      */
-    public RecordSearchFrame(Patient patient) {
+    public RecordSearchFrame(RecordPanel recordPanel, Patient patient) {
         initComponents();
+        this.recordPanel = recordPanel;
         this.patient = patient;
         setLocationRelativeTo(null);
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -115,7 +119,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
                     if (result.isSuccess()) {
                         Record[] records = result.getData();
 
-                        RecordPanel.getInstance().passQueryResults(records);
+                        recordPanel.passQueryResults(records);
 
                         JOptionPane.showMessageDialog(this,
                                 "Successfully retrieved " + records.length + " records!",
