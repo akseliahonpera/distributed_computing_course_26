@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "com.group_13.App",
+            "projectName": "stresstest"
+        },
+        {
+            "type": "java",
             "name": "ServerChoser",
             "request": "launch",
             "mainClass": "com.group_13.ui.ServerChoser",

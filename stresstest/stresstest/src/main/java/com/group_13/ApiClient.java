@@ -92,7 +92,7 @@ public class ApiClient
 
             System.out.println("Creating SSL context");
 
-            SSLContext sslContext = getSSLContext("ds26-truststore.p12", "Gambiinakiuas522".toCharArray());
+            SSLContext sslContext = getSSLContext("C:\\Users\\JONIK\\distributed_systems\\stresstest\\stresstest\\ds26-truststore.p12", "Gambiinakiuas522".toCharArray());
 
             System.out.println("Creating httpclient");
 

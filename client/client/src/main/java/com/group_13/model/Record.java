@@ -20,6 +20,15 @@ public class Record {
     public Record() {
     }
 
+    public Record(Record other) {
+        this.id = other.id;
+        this.patientid = other.patientid;
+        this.datetime = other.datetime;
+        this.operation = other.operation;
+        this.responsible = other.responsible;
+        this.followUp = other.followUp;
+    }
+
     public Record(String ID, String patientID, String datetime, String operation,
                   String responsible, String followUp) {
         this.id = ID;

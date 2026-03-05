@@ -1,1 +1,0 @@
-Sukupuolitautiklinikka,Työterveyslääkäri,Päihdekuntoutuskeskus,Päivystys,Vanhustenhoito,Vanhainkoti,Pappapoliklinikka,Mummopoliklinikka,Saattohoito,Sydäntautipoliklinikka,Muistitautipoliklinikka,Syöpäpoliklinikka

@@ -24,13 +24,13 @@ import com.group_13.service.RecordService;
  */
 public class RecordModifyFrame extends javax.swing.JFrame {
 
-        private Record record;
-        private Patient patient;
+        private final Record record;
+        private final Patient patient;
         private RecordPanel panel;
 
         public RecordModifyFrame(RecordPanel panel, Record record, Patient patient) {
                 this.panel = panel;
-                this.record = record;
+                this.record = new Record(record); // create a copy to avoid modifying the original
                 this.patient = patient;
                 initComponents();
                 setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

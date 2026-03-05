@@ -23,6 +23,17 @@ public class Patient {
     public Patient() {
     }
 
+    public Patient(Patient other) {
+        this.id = other.id;
+        this.fname = other.fname;
+        this.lname = other.lname;
+        this.dateofbirth = other.dateofbirth;
+        this.socialsecnum = other.socialsecnum;
+        this.address = other.address;
+        this.phone = other.phone;
+        this.emergencycontact = other.emergencycontact;
+        this.homehospital = other.homehospital;
+    }
 
     public Patient(String fname, String lname, String dateofbirth, String socialsecnum,
             String address, String phone, String emergencycontact, String homehospital) {
@@ -63,7 +74,6 @@ public class Patient {
                 + ", socialsecnum=" + socialsecnum + ", address=" + address + ", phone=" + phone + ", emergencycontact="
                 + emergencycontact + ", homehospital=" + homehospital + "]";
     }
-
 
     public String getFName() {
         return fname;

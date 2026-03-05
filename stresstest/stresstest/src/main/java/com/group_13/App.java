@@ -254,13 +254,13 @@ public class App
 
     private static void runThroughputTests(ApiClient client, TestData data) throws Exception
     {
-        multiThreadedInsert(client, data, "patients", 10000, 250);
+        multiThreadedInsert(client, data, "patients", 1000, 250);
 
         ArrayList<Long> ids = getIds(client, "patients", 0);
 
-        multiThreadedUpdate(client, data, ids, "patients", 10000, 250);
-        multiThreadedQueryById(client, ids, "patients", 10000, 250);
-        multiThreadedQueryByName(client, data, 10000, 250);
+        multiThreadedUpdate(client, data, ids, "patients", 1000, 250);
+        multiThreadedQueryById(client, ids, "patients", 1000, 250);
+        multiThreadedQueryByName(client, data, 1000, 250);
     }
 
     private static void runLatencyTests(ApiClient client, ApiClient otherClient, TestData data) throws Exception
@@ -283,21 +283,23 @@ public class App
     public static void main( String[] args ) throws Exception
     {
         try {
-
+            System.out.println("Hello");
             TestData patientData = new TestData();
 
-            patientData.addStringVariable("fname", "fnames.txt");
-            patientData.addStringVariable("lname", "lnames.txt");
-            patientData.addStringVariable("address", "streetnames.txt");
-            patientData.addStringVariable("homehospital", "hospitals.txt");
+            patientData.addStringVariable("fname", "C:\\Users\\JONIK\\distributed_systems\\stresstest\\stresstest\\src\\main\\java\\com\\group_13\\fnames.txt");
+            patientData.addStringVariable("lname", "C:\\Users\\JONIK\\distributed_systems\\stresstest\\stresstest\\src\\main\\java\\com\\group_13\\lnames.txt");
+            patientData.addStringVariable("address", "C:\\Users\\JONIK\\distributed_systems\\stresstest\\stresstest\\src\\main\\java\\com\\group_13\\streetnames.txt");
+            patientData.addStringVariable("homehospital", "C:\\Users\\JONIK\\distributed_systems\\stresstest\\stresstest\\src\\main\\java\\com\\group_13\\hospitals.txt");
             patientData.addIntegerVariable("phone", 1000000, 9999999);
             patientData.addIntegerVariable("emergencycontact", 1000000, 9999999);
 
             ApiClient client = new ApiClient("DS26oulu:8001", "root", "root");
             ApiClient otherClient = new ApiClient("DS26tampere:8002", "root", "root");
+            ApiClient thirdClient = new ApiClient("DS26helsinki:8003", "root", "root");
 
-            runThroughputTests(client, patientData);
-            runLatencyTests(client, otherClient, patientData);
+            insertTest(client, patientData, "patients", 50);
+            insertTest(otherClient, patientData, "patients", 50);
+            insertTest(thirdClient, patientData, "patients", 50);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

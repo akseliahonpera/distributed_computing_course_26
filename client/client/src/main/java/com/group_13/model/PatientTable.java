@@ -20,11 +20,13 @@ public class PatientTable extends AbstractTableModel {
     };
 
     public void setPatients(List<Patient> list) {
+        System.out.println("Setting patients: " + list);
         patients = list;
         fireTableDataChanged();
     }
 
     public void updatePatient(Patient updatedPatient) {
+        System.out.println("Updating patient: " + updatedPatient);
         for (int i = 0; i < patients.size(); i++) {
             if (patients.get(i).getId().equals(updatedPatient.getId())) {
                 patients.set(i, updatedPatient);
@@ -35,6 +37,7 @@ public class PatientTable extends AbstractTableModel {
     }
 
     public void addPatient(Patient patient) {
+        System.out.println("Adding patient: " + patient);
         patients.add(patient);
         fireTableDataChanged();
     }

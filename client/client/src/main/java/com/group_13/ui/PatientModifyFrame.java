@@ -25,12 +25,12 @@ public class PatientModifyFrame extends javax.swing.JFrame {
         /**
          * Creates new form PatientModifyFrame
          */
-        private Patient patient;
+        private final Patient patient;
         private PatientPanel panel;
 
         public PatientModifyFrame(PatientPanel panel, Patient patient) {
                 super();
-                this.patient = patient;
+                this.patient = new Patient(patient); // create a copy to avoid modifying the original
                 this.panel = panel;
                 initComponents();
                 setTitle("View/Update patient data");
@@ -159,6 +159,7 @@ public class PatientModifyFrame extends javax.swing.JFrame {
 
                                                 // Success
                                                 if (result.isSuccess()) {
+                                                        System.out.println("Patient updated successfully: " + result.getData()[0]);
                                                         panel.updatePatient(result.getData()[0]);
                                                         JOptionPane.showMessageDialog(this,
                                                                         "Patient updated successfully!",
