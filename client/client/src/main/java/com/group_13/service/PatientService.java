@@ -13,6 +13,14 @@ import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Singleton service class for handling patient-related operations.
+ * Manages fetching, creating, updating, and deleting patients.
+ * Works with PatientAPI to perform API calls related to patient management.
+ */
+
+// NOTE: Only asynchronous methods are used in the project, but synchronous versions are kept for reference.
+
 public class PatientService {
     private static final PatientService INSTANCE = new PatientService();
     private final PatientAPI patientAPI = PatientAPI.getInstance();

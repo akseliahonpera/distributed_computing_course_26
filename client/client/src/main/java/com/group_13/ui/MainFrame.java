@@ -18,7 +18,6 @@ public class MainFrame extends javax.swing.JFrame {
     private final int HEIGHT = 800;
 
     public MainFrame() {
-        // Poistin koko netbeansin generoiman initComponentsin
 
         patientPanel = new PatientPanel();
         recordPanel = new RecordPanel();

@@ -13,7 +13,7 @@ import com.group_13.model.Patient;
  */
 
 // NOTE: I originally intended for the data fields to be inherited from a common superclass, but due to Netbeans GUI builder limitations
-// I had to duplicate the code in PatientDataPanel and RecordDataPanel.
+// I had to instantiate this class in the frames.
 
 public class PatientDataPanel extends javax.swing.JPanel {
 

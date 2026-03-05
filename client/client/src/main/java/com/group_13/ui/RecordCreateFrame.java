@@ -14,7 +14,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
- *
+ * A frame for creating a new record. Contains a RecordDataPanel for entering record information and buttons for creating the record or canceling the operation.
+ * Calls RecordService to create the record and updates the RecordPanel with the new record on success.
+ * Needs the patient to associate the record with, which is passed in the constructor and used to pre-fill the patientID field in the RecordDataPanel.
  * @author JONIK
  */
 public class RecordCreateFrame extends javax.swing.JFrame {

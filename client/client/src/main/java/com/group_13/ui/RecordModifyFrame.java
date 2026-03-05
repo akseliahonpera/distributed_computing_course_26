@@ -14,7 +14,12 @@ import com.group_13.service.PatientService;
 import com.group_13.service.RecordService;
 
 /**
- *
+ * A frame for modifying an existing record. Contains a RecordDataPanel for
+ * entering record information and buttons for updating the record or canceling
+ * the operation.
+ * Calls RecordService to update the record and updates the RecordPanel with the
+ * updated record on success
+ * 
  * @author JONIK
  */
 public class RecordModifyFrame extends javax.swing.JFrame {
@@ -34,13 +39,7 @@ public class RecordModifyFrame extends javax.swing.JFrame {
                 recordDataPanel1.setRecordData(record);
 
                 jButton1.addActionListener(e -> {
-                        try {
-                                jButton1ActionPerformed(e);
-                        } catch (Exception ex) {
-                                // TODO Auto-generated catch block
-                                ex.printStackTrace();
-                        }
-
+                        jButton1ActionPerformed(e);
                 });
 
                 jButton2.addActionListener(e -> {

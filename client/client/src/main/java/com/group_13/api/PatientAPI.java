@@ -20,6 +20,8 @@ import com.group_13.model.ApiResponse;
  * Implements methods to perform CRUD operations on Patient resources.
  */
 
+// NOTE: Only asynchronous methods are used in the project, but synchronous versions are kept for reference.
+
 public class PatientAPI extends BaseAPI {
     private static final PatientAPI INSTANCE = new PatientAPI();
     private static final String PATIENTS_ENDPOINT = BASE_URL + "/patients";
@@ -114,6 +116,8 @@ public class PatientAPI extends BaseAPI {
                 .GET()
                 .build();
 
+        
+
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return new ApiResponse(response.statusCode(), response.body(), response.headers().map());
     }
@@ -127,6 +131,8 @@ public class PatientAPI extends BaseAPI {
                     .header("Authorization", "Bearer " + getToken())
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
+
+            System.out.println("Sending createPatient request with body: " + jsonBody + " to URI: " + request.uri());
 
             CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request,
                     HttpResponse.BodyHandlers.ofString());

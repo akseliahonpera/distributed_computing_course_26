@@ -7,6 +7,10 @@ package com.group_13.model;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 
+/**
+ * A table model for displaying patient information in a JTable.
+ */
+
 public class PatientTable extends AbstractTableModel {
 
     private List<Patient> patients = new ArrayList<>();

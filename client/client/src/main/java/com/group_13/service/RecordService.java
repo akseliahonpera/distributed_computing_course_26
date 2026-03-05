@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Works with RecordAPI to perform API calls related to medical record management.
  */
 
+// NOTE: Only asynchronous methods are used in the project, but synchronous versions are kept for reference.
+
 public class RecordService {
     private static final RecordService INSTANCE = new RecordService();
     private final RecordAPI recordAPI = RecordAPI.getInstance();

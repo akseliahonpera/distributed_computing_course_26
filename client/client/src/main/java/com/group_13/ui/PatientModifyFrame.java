@@ -12,7 +12,12 @@ import com.group_13.service.PatientService;
 import com.group_13.service.RecordService;
 
 /**
- *
+ * A frame for modifying an existing patient. Contains a PatientDataPanel for
+ * entering patient information and buttons for updating the patient or
+ * canceling the operation.
+ * Calls PatientService to update the patient and updates the PatientPanel with
+ * the updated patient on success
+ * 
  * @author JONIK
  */
 public class PatientModifyFrame extends javax.swing.JFrame {
@@ -35,12 +40,7 @@ public class PatientModifyFrame extends javax.swing.JFrame {
 
                 // Modify button
                 jButton1.addActionListener(e -> {
-                        try {
-                                jButton1ActionPerformed(e);
-                        } catch (Exception g) {
-                                // TODO Auto-generated catch block
-                                g.printStackTrace();
-                        }
+                        jButton1ActionPerformed(e);
                 });
 
                 // Exit button
@@ -166,7 +166,7 @@ public class PatientModifyFrame extends javax.swing.JFrame {
                                                                         JOptionPane.INFORMATION_MESSAGE);
                                                         dispose();
                                                 }
-                                                
+
                                                 // Backend error
                                                 else {
                                                         JOptionPane.showMessageDialog(this,

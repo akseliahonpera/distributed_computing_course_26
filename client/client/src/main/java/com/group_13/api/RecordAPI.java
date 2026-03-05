@@ -21,6 +21,8 @@ import com.group_13.model.Patient;
  * Implements methods to perform CRUD operations on Record resources.
  */
 
+// NOTE: Only asynchronous methods are used in the project, but synchronous versions are kept for reference.
+
 public class RecordAPI extends BaseAPI {
     private static final RecordAPI INSTANCE = new RecordAPI();
     private static final String RECORDS_ENDPOINT = BASE_URL + "/records";

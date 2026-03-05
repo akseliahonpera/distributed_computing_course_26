@@ -28,7 +28,6 @@ public class App {
                 LoginFrame frame = new LoginFrame();
                 frame.setVisible(true);
             }
-
         });
 
     }

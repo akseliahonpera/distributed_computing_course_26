@@ -47,12 +47,7 @@ public class PatientCreateFrame extends javax.swing.JFrame {
 
         jButton1.setText("Create patient");
         jButton1.addActionListener(e -> {
-            try {
                 jButton1ActionPerformed(e);
-            } catch (Exception g) {
-                // TODO Auto-generated catch block
-                g.printStackTrace();
-            }
         });
 
         jButton2.setText("Cancel");

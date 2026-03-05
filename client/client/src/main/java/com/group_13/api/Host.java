@@ -1,7 +1,9 @@
 package com.group_13.api;
 
+/* 
+* This class holds relevant information on host nodes for the client.
+*/
 public class Host {
-    /* This class holds relevant information on host nodes for the client. */
     final String prefix= "https://"; 
     String bigdix = null;
     String smalltits = null;
